@@ -1,1188 +1,739 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frames Vizag - Admin Portal</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-  <style>
-    :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #3498db;
-      --accent-color: #e74c3c;
-      --success-color: #27ae60;
-      --warning-color: #f39c12;
-    }
-    
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background-color: #f8f9fa;
-    }
-    
-    .navbar-brand {
-      font-weight: bold;
-      color: var(--accent-color) !important;
-    }
-    
-    .card {
-      border: none;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      border-radius: 10px;
-    }
-    
-    .status-pending { background-color: #fff3cd; color: #856404; }
-    .status-approved { background-color: #d1ecf1; color: #0c5460; }
-    .status-confirmed { background-color: #d4edda; color: #155724; }
-    .status-delivered { background-color: #d4edda; color: #155724; }
-    .status-cancelled { background-color: #f8d7da; color: #721c24; }
-    
-    .login-container {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .login-card {
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-      overflow: hidden;
-      width: 400px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frames Vizag - Custom Photo Frames</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .product-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: 700;
+        }
+        .order-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+        }
+        #loadingSpinner {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Frames Vizag</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#products">Products</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="loginLink">Login</a>
+                    </li>
+                    <li class="nav-item d-none" id="adminLinkContainer">
+                        <a class="nav-link" href="admin.html" id="adminLink">Admin</a>
+                    </li>
+                    <li class="nav-item d-none" id="userLinkContainer">
+                        <a class="nav-link" href="user.html" id="userLink">My Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutLink" style="display:none;">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-<!-- Login Page -->
-<div id="loginPage" class="login-container">
-  <div class="login-card">
-    <div class="p-4">
-      <div class="text-center mb-4">
-        <i class="bi bi-shield-lock" style="font-size: 3rem; color: var(--primary-color);"></i>
-        <h3 class="mt-2">Frames Vizag Admin</h3>
-      </div>
-      <form id="loginForm" onsubmit="login(event)">
-        <div class="mb-3">
-          <label class="form-label">Email Address</label>
-          <input type="email" id="loginEmail" class="form-control" required>
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div id="app-content">
+            <!-- Content will be dynamically loaded here -->
+            <div class="text-center" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" id="loginPassword" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
-      </form>
     </div>
-  </div>
-</div>
 
-<!-- Main App -->
-<div id="mainApp" class="hidden">
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand" href="#">
-        <i class="bi bi-shield-lock"></i> Frames Vizag Admin
-      </a>
-      <div class="navbar-nav ms-auto">
-        <span class="navbar-text me-3">Welcome, <span id="userName">Admin</span></span>
-        <button class="btn btn-outline-light" onclick="logout()">
-          <i class="bi bi-box-arrow-right"></i> Logout
-        </button>
-      </div>
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login / Register</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="authForm">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="isAdminCheck">
+                            <label class="form-check-label" for="isAdminCheck">Admin Login</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" id="loginBtn">Login</button>
+                        <button type="button" class="btn btn-outline-primary w-100 mt-2" id="registerBtn">Register</button>
+                    </form>
+                    <div class="alert alert-danger mt-3 d-none" id="authError"></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </nav>
 
-  <!-- Main Content -->
-  <div class="container mt-4">
-    <!-- Tabs -->
-    <ul class="nav nav-tabs mb-4" id="adminTabs">
-      <li class="nav-item">
-        <a class="nav-link active" data-bs-toggle="tab" href="#dashboardTab">
-          <i class="bi bi-speedometer2"></i> Dashboard
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" href="#ordersTab">
-          <i class="bi bi-bag-check"></i> Orders
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" href="#productsTab">
-          <i class="bi bi-grid"></i> Products
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" href="#retailersTab">
-          <i class="bi bi-people"></i> Retailers
-        </a>
-      </li>
-    </ul>
-
-    <!-- Tab Content -->
-    <div class="tab-content">
-      <!-- Dashboard Tab -->
-      <div class="tab-pane fade show active" id="dashboardTab">
-        <div class="row mb-4">
-          <div class="col-md-3">
-            <div class="card text-white bg-primary">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-currency-rupee fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Today's Sales</h5>
-                    <h2 id="todaySales">₹0</h2>
-                  </div>
+    <!-- Order Modal -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Place Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card text-white bg-success">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-bag-check fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Total Orders</h5>
-                    <h2 id="totalOrders">0</h2>
-                  </div>
+                <div class="modal-body">
+                    <form id="orderForm">
+                        <input type="hidden" id="productId">
+                        <div class="mb-3">
+                            <label class="form-label">Product</label>
+                            <input type="text" class="form-control" id="productName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Size</label>
+                            <input type="text" class="form-control" id="productSize" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="text" class="form-control" id="productPrice" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="customerName" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="customerPhone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="customerPhone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="customerAddress" class="form-label">Delivery Address</label>
+                            <textarea class="form-control" id="customerAddress" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Place Order</button>
+                    </form>
+                    <div class="alert alert-danger mt-3 d-none" id="orderError"></div>
                 </div>
-              </div>
             </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card text-white bg-warning">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-people fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Total Retailers</h5>
-                    <h2 id="totalRetailers">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card text-white bg-info">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-box-seam fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Total Products</h5>
-                    <h2 id="totalProducts">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-
-        <div class="row">
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="mb-0">Recent Orders</h5>
-              </div>
-              <div class="card-body">
-                <div id="recentOrders">
-                  <!-- Recent orders will be loaded here -->
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="mb-0">Pending Approvals</h5>
-              </div>
-              <div class="card-body">
-                <div id="pendingRetailers">
-                  <!-- Pending retailers will be loaded here -->
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Orders Tab -->
-      <div class="tab-pane fade" id="ordersTab">
-        <div class="row mb-4">
-          <div class="col-md-3">
-            <div class="card text-white bg-primary">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-clock fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Pending</h5>
-                    <h2 id="pendingOrders">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card text-white bg-info">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-check fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Confirmed</h5>
-                    <h2 id="confirmedOrders">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card text-white bg-success">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-truck fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Delivered</h5>
-                    <h2 id="deliveredOrders">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="card text-white bg-danger">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-x-circle fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Cancelled</h5>
-                    <h2 id="cancelledOrders">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">All Orders</h5>
-          </div>
-          <div class="card-body">
-            <div id="ordersList">
-              <!-- Orders will be loaded here -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Products Tab -->
-      <div class="tab-pane fade" id="productsTab">
-        <div class="row mb-4">
-          <div class="col-md-6">
-            <button class="btn btn-primary" onclick="showAddProductModal()">
-              <i class="bi bi-plus-circle"></i> Add New Product
-            </button>
-          </div>
-          <div class="col-md-6">
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input type="text" id="productSearch" class="form-control" placeholder="Search products..." onkeyup="filterProducts()">
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">Product Inventory</h5>
-          </div>
-          <div class="card-body">
-            <div id="productsList">
-              <!-- Products will be loaded here -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Retailers Tab -->
-      <div class="tab-pane fade" id="retailersTab">
-        <div class="row mb-4">
-          <div class="col-md-4">
-            <div class="card text-white bg-primary">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-people fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Total Retailers</h5>
-                    <h2 id="retailersTotal">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card text-white bg-warning">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-clock fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Pending Approval</h5>
-                    <h2 id="retailersPending">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card text-white bg-success">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
-                  <i class="bi bi-check-circle fs-1 me-3"></i>
-                  <div>
-                    <h5 class="card-title">Approved</h5>
-                    <h2 id="retailersApproved">0</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">Retailer Management</h5>
-          </div>
-          <div class="card-body">
-            <div id="retailersList">
-              <!-- Retailers will be loaded here -->
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-</div>
 
-<!-- Add Product Modal -->
-<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Add New Product</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="productForm">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Product Name</label>
-              <input type="text" id="productName" class="form-control" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Size</label>
-              <input type="text" id="productSize" class="form-control" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">MRP</label>
-              <input type="number" id="productMRP" class="form-control" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Selling Price</label>
-              <input type="number" id="productPrice" class="form-control" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Category</label>
-              <select id="productCategory" class="form-select" required>
-                <option value="Wooden">Wooden Frame</option>
-                <option value="Acrylic">Acrylic Frame</option>
-                <option value="Mount">Mount Frame</option>
-                <option value="Special">Special Frame</option>
-              </select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Stock Quantity</label>
-              <input type="number" id="productStock" class="form-control" required>
-            </div>
-            <div class="col-12 mb-3">
-              <label class="form-label">Description</label>
-              <textarea id="productDescription" class="form-control" rows="3" required></textarea>
-            </div>
-            <div class="col-12 mb-3">
-              <label class="form-label">Image URL</label>
-              <input type="url" id="productImage" class="form-control" required>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="saveProduct()">Save Product</button>
-      </div>
-    </div>
-  </div>
-</div>
+    <!-- Firebase and other JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        // Firebase configuration
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            where, 
+            getDocs,
+            updateDoc,
+            doc,
+            enableIndexedDbPersistence
+        } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6ShFd_7VAHtkRUg9k6YEvNSXqKMRvuic",
+            authDomain: "framesvizag.firebaseapp.com",
+            projectId: "framesvizag",
+            storageBucket: "framesvizag.appspot.com",
+            messagingSenderId: "128117311675",
+            appId: "1:128117311675:web:8a817b1efb0c0e7bfb419e",
+            measurementId: "G-0EKRGC9748"
+        };
 
-<!-- Firebase SDK -->
-<script type="module">
-  // Import Firebase modules
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    signOut,
-    onAuthStateChanged 
-  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-  import { 
-    getFirestore,
-    collection,
-    doc,
-    setDoc,
-    getDoc,
-    addDoc,
-    updateDoc,
-    query,
-    where,
-    orderBy,
-    getDocs,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyA6ShFd_7VAHtkRUg9k6YEvNSXqKMRvuic",
-    authDomain: "framesvizag.firebaseapp.com",
-    projectId: "framesvizag",
-    storageBucket: "framesvizag.firebasestorage.app",
-    messagingSenderId: "128117311675",
-    appId: "1:128117311675:web:8a817b1efb0c0e7bfb419e",
-    measurementId: "G-0EKRGC9748"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  // Global variables
-  let currentUser = null;
-
-  // Initialize app
-  function initApp() {
-    // Check if user is logged in and is admin
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.email === 'admin@gantasolutions.com') {
-        currentUser = user;
-        showMainApp();
-        loadDashboard();
-        loadOrders();
-        loadProducts();
-        loadRetailers();
-      } else {
-        showLoginPage();
-      }
-    });
-  }
-
-  // Show/Hide pages
-  function showLoginPage() {
-    document.getElementById('loginPage').classList.remove('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-  }
-
-  function showMainApp() {
-    document.getElementById('loginPage').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-  }
-
-  // Authentication functions
-  async function login(event) {
-    event.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      currentUser = userCredential.user;
-      
-      // Verify admin email
-      if (currentUser.email !== 'admin@gantasolutions.com') {
-        alert('Only admin@gantasolutions.com can access this portal');
-        await signOut(auth);
-        return;
-      }
-      
-      showMainApp();
-    } catch (error) {
-      alert('Login failed: ' + error.message);
-    }
-  }
-
-  async function logout() {
-    await signOut(auth);
-    currentUser = null;
-    showLoginPage();
-  }
-
-  // Dashboard functions
-  async function loadDashboard() {
-    try {
-      // Get today's date at midnight
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // Query for today's orders
-      const ordersQuery = query(
-        collection(db, 'orders'),
-        where('createdAt', '>=', today),
-        where('status', '!=', 'cancelled')
-      );
-      
-      const ordersSnapshot = await getDocs(ordersQuery);
-      let todaySales = 0;
-      ordersSnapshot.forEach(doc => {
-        todaySales += doc.data().total || 0;
-      });
-      
-      document.getElementById('todaySales').textContent = `₹${todaySales.toFixed(2)}`;
-      
-      // Load recent orders (last 5)
-      const recentOrdersQuery = query(
-        collection(db, 'orders'),
-        orderBy('createdAt', 'desc'),
-        limit(5)
-      );
-      
-      const recentOrdersSnapshot = await getDocs(recentOrdersQuery);
-      const recentOrdersList = document.getElementById('recentOrders');
-      recentOrdersList.innerHTML = '';
-      
-      if (recentOrdersSnapshot.empty) {
-        recentOrdersList.innerHTML = '<p class="text-muted">No recent orders</p>';
-      } else {
-        recentOrdersSnapshot.forEach(doc => {
-          const order = doc.data();
-          const orderItem = document.createElement('div');
-          orderItem.className = 'd-flex justify-content-between align-items-center mb-2 p-2 border-bottom';
-          orderItem.innerHTML = `
-            <div>
-              <h6 class="mb-0">Order #${order.invoiceNumber}</h6>
-              <small class="text-muted">${order.createdAt?.toDate().toLocaleDateString() || 'N/A'}</small>
-            </div>
-            <div class="text-end">
-              <div class="fw-bold">₹${order.total.toFixed(2)}</div>
-              <span class="badge ${getStatusClass(order.status)}">${order.status}</span>
-            </div>
-          `;
-          recentOrdersList.appendChild(orderItem);
+        // Enable offline persistence
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.log("Offline persistence can only be enabled in one tab at a time.");
+            } else if (err.code == 'unimplemented') {
+                console.log("The current browser does not support offline persistence.");
+            }
         });
-      }
-      
-      // Load pending retailers (last 5)
-      const pendingRetailersQuery = query(
-        collection(db, 'retailers'),
-        where('isApproved', '==', false),
-        orderBy('createdAt', 'desc'),
-        limit(5)
-      );
-      
-      const pendingRetailersSnapshot = await getDocs(pendingRetailersQuery);
-      const pendingRetailersList = document.getElementById('pendingRetailers');
-      pendingRetailersList.innerHTML = '';
-      
-      if (pendingRetailersSnapshot.empty) {
-        pendingRetailersList.innerHTML = '<p class="text-muted">No pending retailer approvals</p>';
-      } else {
-        pendingRetailersSnapshot.forEach(doc => {
-          const retailer = doc.data();
-          const retailerItem = document.createElement('div');
-          retailerItem.className = 'd-flex justify-content-between align-items-center mb-2 p-2 border-bottom';
-          retailerItem.innerHTML = `
-            <div>
-              <h6 class="mb-0">${retailer.businessName}</h6>
-              <small class="text-muted">${retailer.ownerName}</small>
-            </div>
-            <div>
-              <button class="btn btn-sm btn-success me-1" onclick="approveRetailer('${doc.id}')">Approve</button>
-              <button class="btn btn-sm btn-danger" onclick="rejectRetailer('${doc.id}')">Reject</button>
-            </div>
-          `;
-          pendingRetailersList.appendChild(retailerItem);
+
+        // Product data
+        const products = [
+            {
+                id: "frame-30x40",
+                size: "30 x 40",
+                name: "Custom frame with picture",
+                finalPrice: 3000,
+                mrp: 5000,
+                offer: "₹2000 OFF"
+            },
+            {
+                id: "mount-frame",
+                size: "Mount Frame",
+                name: "General mount frame",
+                finalPrice: 599,
+                mrp: 1500,
+                offer: "₹901 OFF"
+            },
+            {
+                id: "frame-24x36",
+                size: "24 x 36",
+                name: "Standard size frame",
+                finalPrice: 2000,
+                mrp: 4500,
+                offer: "₹2500 OFF"
+            },
+            {
+                id: "frame-20x30",
+                size: "20 x 30",
+                name: "Medium frame",
+                finalPrice: 1500,
+                mrp: 3000,
+                offer: "₹1500 OFF"
+            },
+            {
+                id: "frame-12x18",
+                size: "12 x 18",
+                name: "Small frame",
+                finalPrice: 300,
+                mrp: 600,
+                offer: "₹300 OFF"
+            },
+            {
+                id: "frame-10x15",
+                size: "10 x 15",
+                name: "Smaller photo frame",
+                finalPrice: 200,
+                mrp: 500,
+                offer: "₹300 OFF"
+            },
+            {
+                id: "frame-12x18-acrylic",
+                size: "12 x 18 (Acrylic)",
+                name: "Acrylic sheet frame",
+                finalPrice: 300,
+                mrp: 600,
+                offer: "₹300 OFF"
+            },
+            {
+                id: "frame-12x18-glitter",
+                size: "12 x 18 (Glitter Laminate)",
+                name: "Glitter laminated frame",
+                finalPrice: 350,
+                mrp: 650,
+                offer: "₹300 OFF"
+            },
+            {
+                id: "frame-18x24",
+                size: "18 x 24",
+                name: "Medium-large frame",
+                finalPrice: 850,
+                mrp: 2000,
+                offer: "₹1150 OFF"
+            },
+            {
+                id: "frame-a4",
+                size: "A4 size (8 x 12)",
+                name: "Small photo frame",
+                finalPrice: 143,
+                mrp: 300,
+                offer: "₹157 OFF"
+            }
+        ];
+
+        // DOM Elements
+        const appContent = document.getElementById('app-content');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loginLink = document.getElementById('loginLink');
+        const logoutLink = document.getElementById('logoutLink');
+        const adminLinkContainer = document.getElementById('adminLinkContainer');
+        const userLinkContainer = document.getElementById('userLinkContainer');
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+        const authForm = document.getElementById('authForm');
+        const orderForm = document.getElementById('orderForm');
+        const authError = document.getElementById('authError');
+        const orderError = document.getElementById('orderError');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const isAdminCheck = document.getElementById('isAdminCheck');
+
+        // Current page
+        const currentPage = window.location.pathname.split('/').pop();
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                loginLink.style.display = 'none';
+                logoutLink.style.display = 'block';
+                
+                // Check if admin
+                if (user.email === 'admin@gantasolutions.com') {
+                    adminLinkContainer.classList.remove('d-none');
+                    userLinkContainer.classList.add('d-none');
+                } else {
+                    adminLinkContainer.classList.add('d-none');
+                    userLinkContainer.classList.remove('d-none');
+                }
+                
+                // Load appropriate content
+                if (currentPage === 'index.html' || currentPage === '') {
+                    loadProductCatalog();
+                } else if (currentPage === 'admin.html') {
+                    loadAdminDashboard();
+                } else if (currentPage === 'user.html') {
+                    loadUserOrders(user.email);
+                }
+            } else {
+                // User is signed out
+                loginLink.style.display = 'block';
+                logoutLink.style.display = 'none';
+                adminLinkContainer.classList.add('d-none');
+                userLinkContainer.classList.add('d-none');
+                
+                if (currentPage === 'index.html' || currentPage === '') {
+                    loadProductCatalog();
+                } else {
+                    // Redirect to home if not logged in
+                    window.location.href = 'index.html';
+                }
+            }
         });
-      }
-      
-      // Update counters
-      const totalOrders = await getCount(collection(db, 'orders'));
-      document.getElementById('totalOrders').textContent = totalOrders;
-      
-      const totalRetailers = await getCount(collection(db, 'retailers'));
-      document.getElementById('totalRetailers').textContent = totalRetailers;
-      
-      const totalProducts = await getCount(collection(db, 'products'));
-      document.getElementById('totalProducts').textContent = totalProducts;
-      
-    } catch (error) {
-      console.error('Error loading dashboard:', error);
-    }
-  }
 
-  async function getCount(colRef) {
-    const snapshot = await getDocs(colRef);
-    return snapshot.size;
-  }
-
-  function getStatusClass(status) {
-    switch(status) {
-      case 'pending': return 'status-pending';
-      case 'confirmed': return 'status-confirmed';
-      case 'delivered': return 'status-delivered';
-      case 'cancelled': return 'status-cancelled';
-      default: return 'bg-secondary';
-    }
-  }
-
-  // Orders functions
-  async function loadOrders() {
-    try {
-      const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      
-      let pendingOrders = 0;
-      let confirmedOrders = 0;
-      let deliveredOrders = 0;
-      let cancelledOrders = 0;
-      
-      const ordersList = document.getElementById('ordersList');
-      ordersList.innerHTML = '';
-
-      if (querySnapshot.empty) {
-        ordersList.innerHTML = `
-          <div class="text-center py-5">
-            <i class="bi bi-bag-x" style="font-size: 3rem; color: #ccc;"></i>
-            <h5 class="mt-3">No orders yet</h5>
-            <p class="text-muted">Orders will appear here once placed.</p>
-          </div>
-        `;
-      } else {
-        querySnapshot.forEach(doc => {
-          const order = { id: doc.id, ...doc.data() };
-          
-          switch (order.status) {
-            case 'pending': pendingOrders++; break;
-            case 'confirmed': confirmedOrders++; break;
-            case 'delivered': deliveredOrders++; break;
-            case 'cancelled': cancelledOrders++; break;
-          }
-          
-          const orderCard = createOrderCard(order);
-          ordersList.appendChild(orderCard);
+        // Event Listeners
+        loginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginModal.show();
         });
-      }
 
-      // Update counters
-      document.getElementById('pendingOrders').textContent = pendingOrders;
-      document.getElementById('confirmedOrders').textContent = confirmedOrders;
-      document.getElementById('deliveredOrders').textContent = deliveredOrders;
-      document.getElementById('cancelledOrders').textContent = cancelledOrders;
-
-    } catch (error) {
-      console.error('Error loading orders:', error);
-    }
-  }
-
-  function createOrderCard(order) {
-    const div = document.createElement('div');
-    div.className = 'card mb-3';
-    
-    const statusClass = `status-${order.status}`;
-    const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
-    
-    div.innerHTML = `
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">Order #${order.invoiceNumber}</h6>
-        <span class="badge ${statusClass}">${statusText}</span>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <p class="mb-2"><strong>Customer:</strong> ${order.customerName}</p>
-            <p class="mb-2"><strong>Email:</strong> ${order.customerEmail}</p>
-            <p class="mb-2"><strong>Phone:</strong> ${order.customerPhone}</p>
-            <p class="mb-2"><strong>Date:</strong> ${order.createdAt?.toDate().toLocaleDateString() || 'N/A'}</p>
-          </div>
-          <div class="col-md-6">
-            <p class="mb-2"><strong>Items:</strong> ${order.items.length} products</p>
-            <p class="mb-2"><strong>Quantity:</strong> ${order.items.reduce((sum, item) => sum + item.quantity, 0)} units</p>
-            <p class="mb-2"><strong>Total:</strong> ₹${order.total.toFixed(2)}</p>
-          </div>
-        </div>
-        
-        <div class="mt-3">
-          ${order.status === 'pending' ? `
-            <button class="btn btn-success me-2" onclick="confirmOrder('${order.id}')">
-              <i class="bi bi-check-circle"></i> Confirm Order
-            </button>
-            <button class="btn btn-danger" onclick="cancelOrder('${order.id}')">
-              <i class="bi bi-x-circle"></i> Cancel Order
-            </button>
-          ` : ''}
-          
-          ${order.status === 'confirmed' ? `
-            <button class="btn btn-primary me-2" onclick="markDelivered('${order.id}')">
-              <i class="bi bi-truck"></i> Mark as Delivered
-            </button>
-          ` : ''}
-          
-          <button class="btn btn-outline-primary" onclick="viewOrderDetails('${order.id}', ${JSON.stringify(order).replace(/"/g, '&quot;')})">
-            <i class="bi bi-eye"></i> View Details
-          </button>
-        </div>
-      </div>
-    `;
-    
-    return div;
-  }
-
-  async function confirmOrder(orderId) {
-    if (confirm('Are you sure you want to confirm this order?')) {
-      try {
-        await updateDoc(doc(db, 'orders', orderId), {
-          status: 'confirmed',
-          confirmedAt: serverTimestamp()
+        logoutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            });
         });
-        alert('Order confirmed successfully!');
-        loadOrders();
-        loadDashboard();
-      } catch (error) {
-        console.error('Error confirming order:', error);
-        alert('Failed to confirm order. Please try again.');
-      }
-    }
-  }
 
-  async function cancelOrder(orderId) {
-    if (confirm('Are you sure you want to cancel this order?')) {
-      try {
-        await updateDoc(doc(db, 'orders', orderId), {
-          status: 'cancelled',
-          cancelledAt: serverTimestamp()
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (loginBtn.textContent === 'Login') {
+                handleLogin(email, password);
+            } else {
+                handleRegister(email, password);
+            }
         });
-        alert('Order cancelled.');
-        loadOrders();
-        loadDashboard();
-      } catch (error) {
-        console.error('Error cancelling order:', error);
-        alert('Failed to cancel order. Please try again.');
-      }
-    }
-  }
 
-  async function markDelivered(orderId) {
-    if (confirm('Are you sure you want to mark this order as delivered?')) {
-      try {
-        await updateDoc(doc(db, 'orders', orderId), {
-          status: 'delivered',
-          deliveredAt: serverTimestamp()
+        loginBtn.addEventListener('click', () => {
+            registerBtn.textContent = 'Register';
+            loginBtn.textContent = 'Login';
         });
-        alert('Order marked as delivered!');
-        loadOrders();
-        loadDashboard();
-      } catch (error) {
-        console.error('Error marking order as delivered:', error);
-        alert('Failed to update order status. Please try again.');
-      }
-    }
-  }
 
-  function viewOrderDetails(orderId, orderData) {
-    const order = typeof orderData === 'string' ? JSON.parse(orderData) : orderData;
-    
-    const detailWindow = window.open('', '', 'width=800,height=600');
-    const detailHTML = `
-      <html>
-        <head>
-          <title>Order Details - ${order.invoiceNumber}</title>
-          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-          <style>
-            body { padding: 20px; }
-            .company-header { text-align: center; margin-bottom: 30px; }
-            .company-name { font-size: 24px; font-weight: bold; color: #2c3e50; }
-          </style>
-        </head>
-        <body>
-          <div class="company-header">
-            <div class="company-name">Frames Vizag</div>
-            <p>Order Details</p>
-          </div>
-          
-          <div class="row">
-            <div class="col-md-6">
-              <h5>Order Information</h5>
-              <p><strong>Order Number:</strong> ${order.invoiceNumber}</p>
-              <p><strong>Date:</strong> ${order.createdAt?.toDate().toLocaleDateString() || 'N/A'}</p>
-              <p><strong>Status:</strong> ${order.status.toUpperCase()}</p>
-            </div>
-            <div class="col-md-6">
-              <h5>Customer Information</h5>
-              <p><strong>Name:</strong> ${order.customerName}</p>
-              <p><strong>Email:</strong> ${order.customerEmail}</p>
-              <p><strong>Phone:</strong> ${order.customerPhone}</p>
-              <p><strong>Address:</strong> ${order.customerAddress}</p>
-            </div>
-          </div>
-          
-          <h5 class="mt-4">Order Items</h5>
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Size</th>
-                <th>Quantity</th>
-                <th>Rate (₹)</th>
-                <th>Amount (₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${order.items.map(item => `
-                <tr>
-                  <td>${item.name}</td>
-                  <td>${item.size}</td>
-                  <td>${item.quantity}</td>
-                  <td>${item.price.toFixed(2)}</td>
-                  <td>${(item.price * item.quantity).toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          
-          <div class="text-end mt-4">
-            <p>Subtotal: ₹${order.subtotal.toFixed(2)}</p>
-            <p>Shipping: ₹${order.shipping.toFixed(2)}</p>
-            <h5>Total: ₹${order.total.toFixed(2)}</h5>
-          </div>
-          
-          <div class="text-center mt-4">
-            <button class="btn btn-primary" onclick="window.print()">Print</button>
-            <button class="btn btn-secondary ms-2" onclick="window.close()">Close</button>
-          </div>
-        </body>
-      </html>
-    `;
-    
-    detailWindow.document.write(detailHTML);
-    detailWindow.document.close();
-  }
-
-  // Products functions
-  async function loadProducts() {
-    try {
-      const q = query(collection(db, 'products'), orderBy('name'));
-      const querySnapshot = await getDocs(q);
-      
-      const productsList = document.getElementById('productsList');
-      productsList.innerHTML = '';
-
-      if (querySnapshot.empty) {
-        productsList.innerHTML = `
-          <div class="text-center py-5">
-            <i class="bi bi-grid" style="font-size: 3rem; color: #ccc;"></i>
-            <h5 class="mt-3">No products yet</h5>
-            <p class="text-muted">Add products to see them listed here.</p>
-          </div>
-        `;
-      } else {
-        querySnapshot.forEach(doc => {
-          const product = { id: doc.id, ...doc.data() };
-          const productCard = createProductCard(product);
-          productsList.appendChild(productCard);
+        registerBtn.addEventListener('click', () => {
+            registerBtn.textContent = 'Back to Login';
+            loginBtn.textContent = 'Register';
         });
-      }
-    } catch (error) {
-      console.error('Error loading products:', error);
-    }
-  }
 
-  function createProductCard(product) {
-    const div = document.createElement('div');
-    div.className = 'card mb-3';
-    
-    div.innerHTML = `
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-3">
-            <img src="${product.image}" alt="${product.name}" class="img-fluid rounded" style="max-height: 100px;">
-          </div>
-          <div class="col-md-6">
-            <h5 class="card-title">${product.name}</h5>
-            <p class="card-text text-muted small">${product.description}</p>
-            <div class="d-flex">
-              <span class="badge bg-secondary me-2">${product.size}</span>
-              <span class="badge bg-primary">${product.category}</span>
-            </div>
-          </div>
-          <div class="col-md-3 text-end">
-            <div class="mb-2">
-              <span class="text-decoration-line-through text-muted me-2">₹${product.mrp.toFixed(2)}</span>
-              <span class="fw-bold">₹${product.price.toFixed(2)}</span>
-            </div>
-            <div class="mb-2">
-              <span class="badge bg-success">Stock: ${product.stock}</span>
-            </div>
-            <div>
-              <button class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('${product.id}', ${JSON.stringify(product).replace(/"/g, '&quot;')})">
-                <i class="bi bi-pencil"></i> Edit
-              </button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${product.id}')">
-                <i class="bi bi-trash"></i> Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    return div;
-  }
-
-  function showAddProductModal() {
-    document.getElementById('productForm').reset();
-    document.getElementById('productForm').dataset.mode = 'add';
-    const modal = new bootstrap.Modal(document.getElementById('addProductModal'));
-    modal.show();
-  }
-
-  function editProduct(productId, productData) {
-    const product = typeof productData === 'string' ? JSON.parse(productData) : productData;
-    
-    document.getElementById('productName').value = product.name;
-    document.getElementById('productSize').value = product.size;
-    document.getElementById('productMRP').value = product.mrp;
-    document.getElementById('productPrice').value = product.price;
-    document.getElementById('productCategory').value = product.category;
-    document.getElementById('productStock').value = product.stock;
-    document.getElementById('productDescription').value = product.description;
-    document.getElementById('productImage').value = product.image;
-    
-    document.getElementById('productForm').dataset.mode = 'edit';
-    document.getElementById('productForm').dataset.productId = productId;
-    
-    const modal = new bootstrap.Modal(document.getElementById('addProductModal'));
-    modal.show();
-  }
-
-  async function saveProduct() {
-    const form = document.getElementById('productForm');
-    const mode = form.dataset.mode;
-    const productId = form.dataset.productId;
-    
-    const productData = {
-      name: document.getElementById('productName').value,
-      size: document.getElementById('productSize').value,
-      mrp: parseFloat(document.getElementById('productMRP').value),
-      price: parseFloat(document.getElementById('productPrice').value),
-      category: document.getElementById('productCategory').value,
-      stock: parseInt(document.getElementById('productStock').value),
-      description: document.getElementById('productDescription').value,
-      image: document.getElementById('productImage').value,
-      updatedAt: serverTimestamp()
-    };
-    
-    try {
-      if (mode === 'add') {
-        productData.createdAt = serverTimestamp();
-        await addDoc(collection(db, 'products'), productData);
-        alert('Product added successfully!');
-      } else {
-        await updateDoc(doc(db, 'products', productId), productData);
-        alert('Product updated successfully!');
-      }
-      
-      const modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
-      modal.hide();
-      loadProducts();
-    } catch (error) {
-      console.error('Error saving product:', error);
-      alert('Failed to save product. Please try again.');
-    }
-  }
-
-  async function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      try {
-        await deleteDoc(doc(db, 'products', productId));
-        alert('Product deleted successfully!');
-        loadProducts();
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Failed to delete product. Please try again.');
-      }
-    }
-  }
-
-  function filterProducts() {
-    const searchTerm = document.getElementById('productSearch').value.toLowerCase();
-    const productCards = document.querySelectorAll('#productsList .card');
-    
-    productCards.forEach(card => {
-      const name = card.querySelector('.card-title').textContent.toLowerCase();
-      const description = card.querySelector('.card-text').textContent.toLowerCase();
-      
-      if (name.includes(searchTerm) || description.includes(searchTerm)) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  }
-
-  // Retailers functions
-  async function loadRetailers() {
-    try {
-      const q = query(collection(db, 'retailers'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      
-      let totalRetailers = 0;
-      let pendingRetailers = 0;
-      let approvedRetailers = 0;
-      
-      const retailersList = document.getElementById('retailersList');
-      retailersList.innerHTML = '';
-
-      if (querySnapshot.empty) {
-        retailersList.innerHTML = `
-          <div class="text-center py-5">
-            <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
-            <h5 class="mt-3">No retailers yet</h5>
-            <p class="text-muted">Retailer applications will appear here.</p>
-          </div>
-        `;
-      } else {
-        querySnapshot.forEach(doc => {
-          const retailer = { id: doc.id, ...doc.data() };
-          totalRetailers++;
-          
-          if (retailer.isApproved) {
-            approvedRetailers++;
-          } else {
-            pendingRetailers++;
-          }
-          
-          const retailerCard = createRetailerCard(retailer);
-          retailersList.appendChild(retailerCard);
+        orderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            placeOrder();
         });
-      }
 
-      // Update counters
-      document.getElementById('retailersTotal').textContent = totalRetailers;
-      document.getElementById('retailersPending').textContent = pendingRetailers;
-      document.getElementById('retailersApproved').textContent = approvedRetailers;
+        // Functions
+        function showLoading() {
+            loadingSpinner.style.display = 'block';
+            appContent.innerHTML = '';
+        }
 
-    } catch (error) {
-      console.error('Error loading retailers:', error);
-    }
-  }
+        function hideLoading() {
+            loadingSpinner.style.display = 'none';
+        }
 
-  function createRetailerCard(retailer) {
-    const div = document.createElement('div');
-    div.className = 'card mb-3';
-    
-    const statusClass = retailer.isApproved ? 'status-approved' : 'status-pending';
-    const statusText = retailer.isApproved ? 'Approved' : 'Pending Approval';
-    
-    div.innerHTML = `
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">${retailer.businessName}</h6>
-        <span class="badge ${statusClass}">${statusText}</span>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <p class="mb-2"><strong>Owner:</strong> ${retailer.ownerName}</p>
-            <p class="mb-2"><strong>Email:</strong> ${retailer.email}</p>
-            <p class="mb-2"><strong>Phone:</strong> ${retailer.phone}</p>
-            <p class="mb-2"><strong>GST:</strong> ${retailer.gst || 'Not provided'}</p>
-          </div>
-          <div class="col-md-6">
-            <p class="mb-2"><strong>Address:</strong></p>
-            <p class="text-muted small">${retailer.address}</p>
-            <p class="mb-2"><strong>Applied:</strong> ${retailer.createdAt?.toDate().toLocaleDateString() || 'N/A'}</p>
-          </div>
-        </div>
-        ${!retailer.isApproved ? `
-          <div class="mt-3">
-            <button class="btn btn-success me-2" onclick="approveRetailer('${retailer.id}')">
-              <i class="bi bi-check-circle"></i> Approve
-            </button>
-            <button class="btn btn-danger" onclick="rejectRetailer('${retailer.id}')">
-              <i class="bi bi-x-circle"></i> Reject
-            </button>
-          </div>
-        ` : ''}
-      </div>
-    `;
-    
-    return div;
-  }
+        function handleLogin(email, password) {
+            showLoading();
+            signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    loginModal.hide();
+                    authForm.reset();
+                    authError.classList.add('d-none');
+                })
+                .catch((error) => {
+                    authError.textContent = error.message;
+                    authError.classList.remove('d-none');
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
 
-  async function approveRetailer(retailerId) {
-    if (confirm('Are you sure you want to approve this retailer?')) {
-      try {
-        await updateDoc(doc(db, 'retailers', retailerId), {
-          isApproved: true,
-          approvedAt: serverTimestamp()
-        });
-        alert('Retailer approved successfully!');
-        loadRetailers();
-        loadDashboard();
-      } catch (error) {
-        console.error('Error approving retailer:', error);
-        alert('Failed to approve retailer. Please try again.');
-      }
-    }
-  }
+        function handleRegister(email, password) {
+            showLoading();
+            createUserWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    authError.textContent = 'Registration successful! Please login.';
+                    authError.classList.remove('d-none');
+                    authError.classList.remove('alert-danger');
+                    authError.classList.add('alert-success');
+                    registerBtn.textContent = 'Back to Login';
+                    loginBtn.textContent = 'Login';
+                })
+                .catch((error) => {
+                    authError.textContent = error.message;
+                    authError.classList.remove('d-none');
+                    authError.classList.remove('alert-success');
+                    authError.classList.add('alert-danger');
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
 
-  async function rejectRetailer(retailerId) {
-    if (confirm('Are you sure you want to reject this retailer? This action cannot be undone.')) {
-      try {
-        await updateDoc(doc(db, 'retailers', retailerId), {
-          isApproved: false,
-          rejectedAt: serverTimestamp()
-        });
-        alert('Retailer rejected.');
-        loadRetailers();
-        loadDashboard();
-      } catch (error) {
-        console.error('Error rejecting retailer:', error);
-        alert('Failed to reject retailer. Please try again.');
-      }
-    }
-  }
+        function loadProductCatalog() {
+            showLoading();
+            
+            let html = `
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="text-center mb-4">Our Frame Collection</h2>
+                    </div>
+                </div>
+                <div class="row" id="products-container">
+            `;
+            
+            products.forEach(product => {
+                html += `
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="card product-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${product.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${product.size}</h6>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <span class="text-decoration-line-through text-muted">₹${product.mrp}</span>
+                                        <h4 class="text-primary">₹${product.finalPrice}</h4>
+                                        <span class="badge bg-success">${product.offer}</span>
+                                    </div>
+                                    <button class="btn btn-primary order-btn" data-id="${product.id}">
+                                        Order Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            appContent.innerHTML = html;
+            hideLoading();
+            
+            // Add event listeners to order buttons
+            document.querySelectorAll('.order-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = e.target.getAttribute('data-id');
+                    const product = products.find(p => p.id === productId);
+                    
+                    document.getElementById('productId').value = product.id;
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productSize').value = product.size;
+                    document.getElementById('productPrice').value = `₹${product.finalPrice}`;
+                    
+                    orderModal.show();
+                });
+            });
+        }
 
-  // Expose functions to global scope
-  window.login = login;
-  window.logout = logout;
-  window.confirmOrder = confirmOrder;
-  window.cancelOrder = cancelOrder;
-  window.markDelivered = markDelivered;
-  window.viewOrderDetails = viewOrderDetails;
-  window.showAddProductModal = showAddProductModal;
-  window.saveProduct = saveProduct;
-  window.editProduct = editProduct;
-  window.deleteProduct = deleteProduct;
-  window.filterProducts = filterProducts;
-  window.approveRetailer = approveRetailer;
-  window.rejectRetailer = rejectRetailer;
+        function placeOrder() {
+            showLoading();
+            orderError.classList.add('d-none');
+            
+            const order = {
+                productId: document.getElementById('productId').value,
+                productName: document.getElementById('productName').value,
+                productSize: document.getElementById('productSize').value,
+                productPrice: document.getElementById('productPrice').value,
+                customerName: document.getElementById('customerName').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                customerAddress: document.getElementById('customerAddress').value,
+                customerEmail: auth.currentUser?.email || 'guest',
+                orderDate: new Date().toISOString(),
+                status: 'Order Placed',
+                paymentStatus: 'Pending',
+                courierInfo: '',
+                trackingNumber: ''
+            };
+            
+            addDoc(collection(db, 'orders'), order)
+                .then(() => {
+                    orderModal.hide();
+                    orderForm.reset();
+                    alert('Order placed successfully!');
+                })
+                .catch((error) => {
+                    orderError.textContent = error.message;
+                    orderError.classList.remove('d-none');
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
 
-  // Initialize app when page loads
-  window.addEventListener('load', initApp);
-</script>
+        function loadAdminDashboard() {
+            showLoading();
+            
+            let html = `
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="text-center mb-4">Admin Dashboard</h2>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Recent Orders</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Product</th>
+                                                <th>Customer</th>
+                                                <th>Phone</th>
+                                                <th>Status</th>
+                                                <th>Payment</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="orders-table-body">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            appContent.innerHTML = html;
+            
+            // Load orders from Firestore
+            getDocs(query(collection(db, 'orders')))
+                .then((querySnapshot) => {
+                    const ordersTableBody = document.getElementById('orders-table-body');
+                    
+                    if (querySnapshot.empty) {
+                        ordersTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="text-center">No orders found</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    querySnapshot.forEach((doc) => {
+                        const order = doc.data();
+                        const orderId = doc.id;
+                        
+                        const statusOptions = ['Order Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+                        const paymentOptions = ['Pending', 'Paid', 'Failed'];
+                        
+                        let statusSelect = `<select class="form-select form-select-sm status-select" data-order-id="${orderId}">`;
+                        statusOptions.forEach(option => {
+                            statusSelect += `<option value="${option}" ${option === order.status ? 'selected' : ''}>${option}</option>`;
+                        });
+                        statusSelect += `</select>`;
+                        
+                        let paymentSelect = `<select class="form-select form-select-sm payment-select" data-order-id="${orderId}">`;
+                        paymentOptions.forEach(option => {
+                            paymentSelect += `<option value="${option}" ${option === order.paymentStatus ? 'selected' : ''}>${option}</option>`;
+                        });
+                        paymentSelect += `</select>`;
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${orderId.substring(0, 8)}...</td>
+                            <td>${order.productName} (${order.productSize})</td>
+                            <td>${order.customerName}</td>
+                            <td>${order.customerPhone}</td>
+                            <td>${statusSelect}</td>
+                            <td>${paymentSelect}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary update-btn" data-order-id="${orderId}">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </td>
+                        `;
+                        
+                        ordersTableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to update buttons
+                    document.querySelectorAll('.update-btn').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const orderId = e.target.getAttribute('data-order-id') || 
+                                         e.target.closest('.update-btn').getAttribute('data-order-id');
+                            
+                            const statusSelect = document.querySelector(`.status-select[data-order-id="${orderId}"]`);
+                            const paymentSelect = document.querySelector(`.payment-select[data-order-id="${orderId}"]`);
+                            
+                            updateDoc(doc(db, 'orders', orderId), {
+                                status: statusSelect.value,
+                                paymentStatus: paymentSelect.value
+                            }).then(() => {
+                                alert('Order updated successfully!');
+                            }).catch((error) => {
+                                alert('Error updating order: ' + error.message);
+                            });
+                        });
+                    });
+                })
+                .catch((error) => {
+                    appContent.innerHTML = `
+                        <div class="alert alert-danger">Error loading orders: ${error.message}</div>
+                    `;
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
+
+        function loadUserOrders(userEmail) {
+            showLoading();
+            
+            let html = `
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="text-center mb-4">My Orders</h2>
+                        <div id="user-orders-container"></div>
+                    </div>
+                </div>
+            `;
+            
+            appContent.innerHTML = html;
+            
+            // Load user's orders from Firestore
+            getDocs(query(collection(db, 'orders'), where('customerEmail', '==', userEmail)))
+                .then((querySnapshot) => {
+                    const ordersContainer = document.getElementById('user-orders-container');
+                    
+                    if (querySnapshot.empty) {
+                        ordersContainer.innerHTML = `
+                            <div class="alert alert-info">You haven't placed any orders yet.</div>
+                        `;
+                        return;
+                    }
+                    
+                    querySnapshot.forEach((doc) => {
+                        const order = doc.data();
+                        const orderId = doc.id;
+                        
+                        let statusBadgeClass = 'bg-secondary';
+                        if (order.status === 'Processing') statusBadgeClass = 'bg-info';
+                        if (order.status === 'Shipped') statusBadgeClass = 'bg-primary';
+                        if (order.status === 'Delivered') statusBadgeClass = 'bg-success';
+                        if (order.status === 'Cancelled') statusBadgeClass = 'bg-danger';
+                        
+                        let paymentBadgeClass = 'bg-secondary';
+                        if (order.paymentStatus === 'Paid') paymentBadgeClass = 'bg-success';
+                        if (order.paymentStatus === 'Failed') paymentBadgeClass = 'bg-danger';
+                        
+                        const orderDate = new Date(order.orderDate).toLocaleString();
+                        
+                        const orderCard = document.createElement('div');
+                        orderCard.className = 'card mb-3 order-card';
+                        orderCard.innerHTML = `
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <h5 class="card-title">${order.productName}</h5>
+                                    <small class="text-muted">${orderDate}</small>
+                                </div>
+                                <h6 class="card-subtitle mb-2 text-muted">${order.productSize}</h6>
+                                <p class="card-text">Order ID: ${orderId.substring(0, 8)}...</p>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Status:</strong> <span class="badge ${statusBadgeClass} status-badge">${order.status}</span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Payment:</strong> <span class="badge ${paymentBadgeClass} status-badge">${order.paymentStatus}</span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Price:</strong> ${order.productPrice}</p>
+                                    </div>
+                                </div>
+                                ${order.courierInfo ? `
+                                    <div class="mt-2">
+                                        <p><strong>Courier:</strong> ${order.courierInfo}</p>
+                                        <p><strong>Tracking #:</strong> ${order.trackingNumber}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                        
+                        ordersContainer.appendChild(orderCard);
+                    });
+                })
+                .catch((error) => {
+                    appContent.innerHTML = `
+                        <div class="alert alert-danger">Error loading orders: ${error.message}</div>
+                    `;
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
+
+        // Initialize the appropriate page based on current URL
+        if (currentPage === 'index.html' || currentPage === '') {
+            loadProductCatalog();
+        } else if (currentPage === 'admin.html') {
+            // Will be handled by auth state listener
+        } else if (currentPage === 'user.html') {
+            // Will be handled by auth state listener
+        }
+    </script>
 </body>
 </html>
