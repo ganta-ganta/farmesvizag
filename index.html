@@ -5,37 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frames Vizag - Custom Photo Frames</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Firebase App (the core Firebase SDK) -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<!-- Firebase Database -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-<!-- Firebase Auth -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-<!-- Firebase Storage -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .product-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: none;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-img-top {
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+        }
+        .section-title {
+            position: relative;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .section-title:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(to right, #0d6efd, #6c757d);
+        }
+        .whatsapp-catalog-btn {
+            background-color: #25D366;
+            color: white;
+        }
+        .whatsapp-catalog-btn:hover {
+            background-color: #128C7E;
+            color: white;
+        }
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        footer {
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">Frames Vizag</a>
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-image me-2"></i>Frames Vizag
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="#" id="homeLink">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="productsLink">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="whatsappCatalogLink">WhatsApp Catalog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="homeLink"><i class="fas fa-home me-1"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="productsLink"><i class="fas fa-th me-1"></i> Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="whatsappCatalogLink"><i class="fab fa-whatsapp me-1"></i> WhatsApp Catalog</a></li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="#" id="loginLink">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="registerLink">Register</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="adminLink" style="display:none;">Admin</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="logoutLink" style="display:none;">Logout</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="cartLink"><i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="loginLink"><i class="fas fa-sign-in-alt me-1"></i> Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="registerLink"><i class="fas fa-user-plus me-1"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="adminLink" style="display:none;"><i class="fas fa-cog me-1"></i> Admin</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="logoutLink" style="display:none;"><i class="fas fa-sign-out-alt me-1"></i> Logout</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="cartLink">
+                            <i class="fas fa-shopping-cart me-1"></i> 
+                            <span id="cartCount">0</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -43,23 +95,26 @@
 
     <!-- Main Content Area -->
     <div class="container mt-4" id="mainContent">
-        <!-- Content will be dynamically loaded here -->
         <div class="text-center py-5">
-            <h1>Welcome to Frames Vizag</h1>
+            <h1 class="fw-bold">Welcome to Frames Vizag</h1>
             <p class="lead">Custom photo frames made with love in Visakhapatnam</p>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white mt-5 py-4">
+    <footer class="bg-dark text-white py-4 mt-5">
         <div class="container text-center">
+            <div class="mb-3">
+                <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>
+            </div>
             <p>&copy; 2023 Frames Vizag. All rights reserved.</p>
-            <p>Contact: +91 7095615567 | framesvizag@gmail.com</p>
+            <p><i class="fas fa-phone me-2"></i> +91 7095615567 | <i class="fas fa-envelope me-2"></i> framesvizag@gmail.com</p>
         </div>
     </footer>
 
     <!-- Modals -->
-    <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -81,15 +136,14 @@
                             <input type="checkbox" class="form-check-input" id="rememberMe">
                             <label class="form-check-label" for="rememberMe">Remember me</label>
                         </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
-                        <button type="button" class="btn btn-link" id="forgotPasswordLink">Forgot Password?</button>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                        <button type="button" class="btn btn-link mt-2 w-100" id="forgotPasswordLink">Forgot Password?</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -103,14 +157,13 @@
                             <label for="resetEmail" class="form-label">Email</label>
                             <input type="email" class="form-control" id="resetEmail" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Send Reset Link</button>
+                        <button type="submit" class="btn btn-primary w-100">Send Reset Link</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -140,25 +193,1043 @@
                             <label for="registerConfirmPassword" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="registerConfirmPassword" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Register</button>
+                        <button type="submit" class="btn btn-primary w-100">Register</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK and other scripts -->
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js"></script>
+    <!-- Firebase and other scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- App Scripts -->
-    <script src="js/auth.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/orders.js"></script>
-    <script src="js/admin.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Main App Script -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut,
+            sendPasswordResetEmail 
+        } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            set, 
+            get, 
+            update, 
+            push, 
+            remove,
+            child 
+        } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+        import { 
+            getStorage, 
+            ref as storageRef, 
+            uploadBytes, 
+            getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6ShFd_7VAHtkRUg9k6YEvNSXqKMRvuic",
+            authDomain: "framesvizag.firebaseapp.com",
+            databaseURL: "https://framesvizag-default-rtdb.firebaseio.com",
+            projectId: "framesvizag",
+            storageBucket: "framesvizag.appspot.com",
+            messagingSenderId: "128117311675",
+            appId: "1:128117311675:web:8a817b1efb0c0e7bfb419e",
+            measurementId: "G-0EKRGC9748"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+        const analytics = getAnalytics(app);
+
+        // Global Variables
+        let currentUser = null;
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const ADMIN_EMAIL = "admin@gantasolutions.com";
+
+        // DOM Elements
+        const loginLink = document.getElementById('loginLink');
+        const registerLink = document.getElementById('registerLink');
+        const logoutLink = document.getElementById('logoutLink');
+        const adminLink = document.getElementById('adminLink');
+        const cartLink = document.getElementById('cartLink');
+        const cartCount = document.getElementById('cartCount');
+        const homeLink = document.getElementById('homeLink');
+        const productsLink = document.getElementById('productsLink');
+        const whatsappCatalogLink = document.getElementById('whatsappCatalogLink');
+        const mainContent = document.getElementById('mainContent');
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+
+        // Initialize Modals
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+        const forgotPasswordModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartCount();
+            checkAuthState();
+            loadHomePage();
+        });
+
+        loginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginModal.show();
+        });
+
+        registerLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerModal.show();
+        });
+
+        logoutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                alert('Logged out successfully');
+                checkAuthState();
+            }).catch(error => {
+                alert('Error logging out: ' + error.message);
+            });
+        });
+
+        adminLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadAdminDashboard();
+        });
+
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadHomePage();
+        });
+
+        productsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadProductsPage();
+        });
+
+        whatsappCatalogLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://wa.me/c/917095615567', '_blank');
+        });
+
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginModal.hide();
+            forgotPasswordModal.show();
+        });
+
+        cartLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadCartPage();
+        });
+
+        // Login Form Submission
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    loginModal.hide();
+                    checkAuthState();
+                })
+                .catch((error) => {
+                    alert('Login error: ' + error.message);
+                });
+        });
+
+        // Register Form Submission
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const phone = document.getElementById('registerPhone').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Save additional user data
+                    return set(ref(db, 'users/' + userCredential.user.uid), {
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        createdAt: Date.now()
+                    });
+                })
+                .then(() => {
+                    registerModal.hide();
+                    alert('Registration successful! Please login.');
+                })
+                .catch((error) => {
+                    alert('Registration error: ' + error.message);
+                });
+        });
+
+        // Forgot Password Form Submission
+        document.getElementById('forgotPasswordForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+            
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    alert('Password reset email sent. Please check your inbox.');
+                    forgotPasswordModal.hide();
+                })
+                .catch((error) => {
+                    alert('Error sending reset email: ' + error.message);
+                });
+        });
+
+        // Functions
+        function checkAuthState() {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                
+                if (user) {
+                    // User is logged in
+                    loginLink.style.display = 'none';
+                    registerLink.style.display = 'none';
+                    logoutLink.style.display = 'block';
+                    
+                    // Check if admin
+                    if (user.email === ADMIN_EMAIL) {
+                        adminLink.style.display = 'block';
+                    } else {
+                        adminLink.style.display = 'none';
+                    }
+                } else {
+                    // User is logged out
+                    loginLink.style.display = 'block';
+                    registerLink.style.display = 'block';
+                    logoutLink.style.display = 'none';
+                    adminLink.style.display = 'none';
+                }
+            });
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            cartCount.textContent = count;
+        }
+
+        function loadHomePage() {
+            mainContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mx-auto text-center py-5">
+                        <h1 class="fw-bold">Welcome to Frames Vizag</h1>
+                        <p class="lead">Custom photo frames made with love in Visakhapatnam</p>
+                        <div class="mt-4">
+                            <button class="btn btn-primary btn-lg me-2" id="browseProductsBtn">
+                                <i class="fas fa-th me-2"></i>Browse Products
+                            </button>
+                            <button class="btn btn-success btn-lg whatsapp-catalog-btn" id="whatsappBtn">
+                                <i class="fab fa-whatsapp me-2"></i>View Catalog
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-md-8 mx-auto">
+                        <h2 class="section-title">Featured Products</h2>
+                        <div class="row" id="featuredProducts">
+                            <!-- Featured products will be loaded here -->
+                            <div class="col-12 text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('browseProductsBtn').addEventListener('click', loadProductsPage);
+            document.getElementById('whatsappBtn').addEventListener('click', () => {
+                window.open('https://wa.me/c/917095615567', '_blank');
+            });
+            
+            // Load featured products
+            get(ref(db, 'products')).then((snapshot) => {
+                const products = snapshot.val();
+                const featuredContainer = document.getElementById('featuredProducts');
+                featuredContainer.innerHTML = '';
+                
+                if (products) {
+                    // Find all featured products
+                    let featuredProducts = [];
+                    
+                    Object.values(products).forEach(category => {
+                        Object.entries(category).forEach(([id, product]) => {
+                            if (product.active && product.isFeatured) {
+                                featuredProducts.push({ id, ...product });
+                            }
+                        });
+                    });
+                    
+                    // Display up to 4 featured products
+                    featuredProducts = featuredProducts.slice(0, 4);
+                    
+                    if (featuredProducts.length > 0) {
+                        featuredProducts.forEach(product => {
+                            const discountBadge = product.discount > 0 
+                                ? `<span class="badge bg-danger discount-badge">Save ₹${product.discount}</span>`
+                                : '';
+                            
+                            const priceDisplay = product.mrp > product.finalPrice
+                                ? `<div class="d-flex align-items-center justify-content-center">
+                                      <span class="text-danger fw-bold">₹${product.finalPrice}</span>
+                                      <span class="text-muted text-decoration-line-through ms-2">₹${product.mrp}</span>
+                                   </div>`
+                                : `<div class="fw-bold text-center">₹${product.finalPrice}</div>`;
+                            
+                            featuredContainer.innerHTML += `
+                                <div class="col-md-3 mb-4">
+                                    <div class="card product-card h-100 position-relative">
+                                        ${discountBadge}
+                                        <img src="${product.images?.[0] || 'images/placeholder.jpg'}" 
+                                             class="card-img-top" 
+                                             alt="${product.name}"
+                                             style="height: 180px; object-fit: cover;">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-center">${product.name}</h5>
+                                            <p class="card-text text-muted text-center"><small>${product.size}</small></p>
+                                            ${priceDisplay}
+                                            <div class="d-grid gap-2 mt-3">
+                                                <button class="btn btn-sm btn-outline-primary view-product" data-id="${product.id}">
+                                                    <i class="fas fa-eye me-1"></i>View
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        featuredContainer.innerHTML = `
+                            <div class="col-12 text-center py-4">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                <p>No featured products available at the moment</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Add event listeners to view buttons
+                    document.querySelectorAll('.view-product').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const productId = e.target.closest('button').getAttribute('data-id');
+                            loadProductDetailPage(productId);
+                        });
+                    });
+                } else {
+                    featuredContainer.innerHTML = `
+                        <div class="col-12 text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-muted mb-3"></i>
+                            <p>Error loading products. Please try again later.</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function loadProductsPage() {
+            mainContent.innerHTML = `
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="section-title mb-4">Our Frame Collections</h2>
+                        
+                        <!-- Search and Filter -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="productSearch" placeholder="Search frames...">
+                                    <button class="btn btn-outline-secondary" id="searchBtn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select" id="categoryFilter">
+                                    <option value="">All Categories</option>
+                                    <option value="wooden">Wooden Frames</option>
+                                    <option value="mount">Mount Frames</option>
+                                    <option value="special">Special Products</option>
+                                    <option value="acrylic">Acrylic Frames</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Featured Offers Section -->
+                        <div class="mb-5">
+                            <h3 class="section-title"><i class="fas fa-star text-warning me-2"></i>Featured Offers</h3>
+                            <div class="row" id="featuredOffersContainer">
+                                <div class="col-12 text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- All Products Section -->
+                        <div class="mb-5">
+                            <h3 class="section-title">All Frame Sizes</h3>
+                            <div class="row" id="productsContainer">
+                                <div class="col-12 text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Special Products Section -->
+                        <div class="mb-5">
+                            <h3 class="section-title"><i class="fas fa-bolt text-primary me-2"></i>Special Products</h3>
+                            <div class="row" id="specialProductsContainer">
+                                <div class="col-12 text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const loadProducts = () => {
+                const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+                const category = document.getElementById('categoryFilter').value;
+                
+                get(ref(db, 'products')).then((snapshot) => {
+                    const products = snapshot.val();
+                    const productsContainer = document.getElementById('productsContainer');
+                    const featuredContainer = document.getElementById('featuredOffersContainer');
+                    const specialContainer = document.getElementById('specialProductsContainer');
+                    
+                    // Clear containers
+                    productsContainer.innerHTML = '';
+                    featuredContainer.innerHTML = '';
+                    specialContainer.innerHTML = '';
+                    
+                    if (products) {
+                        let hasFeatured = false;
+                        let hasSpecial = false;
+                        let hasRegular = false;
+                        
+                        // Process all product categories
+                        Object.values(products).forEach(categoryProducts => {
+                            Object.entries(categoryProducts).forEach(([id, product]) => {
+                                if (!product.active) return;
+                                
+                                // Skip if doesn't match search term
+                                if (searchTerm && !product.name.toLowerCase().includes(searchTerm) && 
+                                    !product.description.toLowerCase().includes(searchTerm)) {
+                                    return;
+                                }
+                                
+                                // Skip if doesn't match category filter
+                                if (category && product.category !== category) {
+                                    return;
+                                }
+                                
+                                const discountBadge = product.discount > 0 
+                                    ? `<span class="badge bg-danger discount-badge">Save ₹${product.discount}</span>`
+                                    : '';
+                                    
+                                const priceDisplay = product.mrp > product.finalPrice
+                                    ? `<div class="d-flex align-items-center">
+                                          <span class="text-danger fw-bold">₹${product.finalPrice}</span>
+                                          <span class="text-muted text-decoration-line-through ms-2">₹${product.mrp}</span>
+                                       </div>`
+                                    : `<div class="fw-bold">₹${product.finalPrice}</div>`;
+                                
+                                const productCard = `
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card product-card h-100 position-relative">
+                                            ${discountBadge}
+                                            <img src="${product.images?.[0] || 'images/placeholder.jpg'}" 
+                                                 class="card-img-top" 
+                                                 alt="${product.name}"
+                                                 style="height: 200px; object-fit: cover;">
+                                            <div class="card-body">
+                                                <h5 class="card-title">${product.name}</h5>
+                                                <p class="card-text text-muted"><small>${product.size}</small></p>
+                                                ${priceDisplay}
+                                                <div class="mt-3 d-flex justify-content-between">
+                                                    <button class="btn btn-sm btn-outline-primary view-product" data-id="${id}">
+                                                        <i class="fas fa-eye me-1"></i> View
+                                                    </button>
+                                                    <button class="btn btn-sm btn-primary add-to-cart" data-id="${id}">
+                                                        <i class="fas fa-cart-plus me-1"></i> Add
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                // Categorize products
+                                if (product.isFeatured) {
+                                    featuredContainer.innerHTML += productCard;
+                                    hasFeatured = true;
+                                } 
+                                if (product.isSpecial) {
+                                    specialContainer.innerHTML += productCard;
+                                    hasSpecial = true;
+                                } 
+                                if (!product.isFeatured && !product.isSpecial) {
+                                    productsContainer.innerHTML += productCard;
+                                    hasRegular = true;
+                                }
+                            });
+                        });
+                        
+                        // Show messages if no products found
+                        if (!hasFeatured) {
+                            featuredContainer.innerHTML = `
+                                <div class="col-12 text-center py-4">
+                                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                                    <p>No featured offers available</p>
+                                </div>
+                            `;
+                        }
+                        
+                        if (!hasSpecial) {
+                            specialContainer.innerHTML = `
+                                <div class="col-12 text-center py-4">
+                                    <i class="fas fa-bolt fa-3x text-muted mb-3"></i>
+                                    <p>No special products available</p>
+                                </div>
+                            `;
+                        }
+                        
+                        if (!hasRegular) {
+                            productsContainer.innerHTML = `
+                                <div class="col-12 text-center py-4">
+                                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                    <p>No products found matching your criteria</p>
+                                </div>
+                            `;
+                        }
+                        
+                        // Add event listeners
+                        addProductEventListeners();
+                    } else {
+                        productsContainer.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                                <h4>No frames available at the moment</h4>
+                                <p>Please check back later or contact us for custom orders</p>
+                            </div>
+                        `;
+                    }
+                }).catch(error => {
+                    console.error("Error loading products:", error);
+                    productsContainer.innerHTML = `
+                        <div class="col-12 text-center py-5 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <h4>Error loading products</h4>
+                            <p>Please try again later</p>
+                        </div>
+                    `;
+                });
+            };
+            
+            // Initial load
+            loadProducts();
+            
+            // Add event listeners for filtering
+            document.getElementById('searchBtn').addEventListener('click', loadProducts);
+            document.getElementById('productSearch').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') loadProducts();
+            });
+            document.getElementById('categoryFilter').addEventListener('change', loadProducts);
+        }
+
+        function addProductEventListeners() {
+            document.querySelectorAll('.view-product').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = e.target.closest('button').getAttribute('data-id');
+                    loadProductDetailPage(productId);
+                });
+            });
+            
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = e.target.closest('button').getAttribute('data-id');
+                    addToCart(productId);
+                });
+            });
+        }
+
+        function loadProductDetailPage(productId) {
+            get(ref(db, 'products')).then((snapshot) => {
+                const allProducts = snapshot.val();
+                let product = null;
+                let productCategory = '';
+                
+                // Find product in all categories
+                Object.entries(allProducts).forEach(([category, products]) => {
+                    if (products[productId]) {
+                        product = products[productId];
+                        productCategory = category;
+                        product.id = productId;
+                    }
+                });
+                
+                if (!product) {
+                    mainContent.innerHTML = '<div class="alert alert-danger">Product not found</div>';
+                    return;
+                }
+                
+                const discountBadge = product.discount > 0 
+                    ? `<span class="badge bg-danger">Save ₹${product.discount}</span>`
+                    : '';
+                
+                const priceDisplay = product.mrp > product.finalPrice
+                    ? `<div class="d-flex align-items-center mb-3">
+                          <span class="text-danger fw-bold fs-3">₹${product.finalPrice}</span>
+                          <span class="text-muted text-decoration-line-through ms-3">₹${product.mrp}</span>
+                          ${discountBadge}
+                       </div>`
+                    : `<div class="fw-bold fs-3 mb-3">₹${product.finalPrice}</div>`;
+                
+                mainContent.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="sticky-top" style="top: 20px;">
+                                <img src="${product.images?.[0] || 'images/placeholder.jpg'}" 
+                                     class="img-fluid rounded mb-3" 
+                                     alt="${product.name}"
+                                     id="mainProductImage">
+                                <div class="row g-2">
+                                    ${product.images?.map((img, index) => `
+                                        <div class="col-3">
+                                            <img src="${img}" 
+                                                 class="img-thumbnail ${index === 0 ? 'active' : ''}" 
+                                                 style="cursor:pointer; height: 80px; object-fit: cover;"
+                                                 onclick="document.getElementById('mainProductImage').src='${img}';
+                                                          this.classList.add('active');
+                                                          Array.from(this.parentNode.children).forEach(el => {
+                                                              if (el !== this) el.classList.remove('active');
+                                                          });">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h2>${product.name}</h2>
+                            <p class="text-muted">${productCategory.charAt(0).toUpperCase() + productCategory.slice(1)} Frame</p>
+                            
+                            ${priceDisplay}
+                            
+                            <p class="mb-4">${product.description || 'No description available.'}</p>
+                            
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Product Details</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Size:</span>
+                                            <span class="fw-bold">${product.size}</span>
+                                        </li>
+                                        ${product.material ? `
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Material:</span>
+                                            <span class="fw-bold">${product.material}</span>
+                                        </li>
+                                        ` : ''}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Availability:</span>
+                                            <span class="fw-bold text-success">In Stock</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="me-3">
+                                    <label class="form-label">Quantity:</label>
+                                    <input type="number" class="form-control" id="quantityInput" min="1" value="1" style="width: 80px;">
+                                </div>
+                                <button class="btn btn-primary btn-lg" id="addToCartBtn">
+                                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                </button>
+                            </div>
+                            
+                            <button class="btn btn-outline-secondary" id="backToProductsBtn">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Products
+                            </button>
+                            
+                            <div class="mt-4">
+                                <button class="btn btn-success whatsapp-catalog-btn" id="shareWhatsAppBtn">
+                                    <i class="fab fa-whatsapp me-2"></i> Share via WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add active class styling
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    .img-thumbnail.active {
+                        border: 2px solid #0d6efd !important;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                document.getElementById('addToCartBtn').addEventListener('click', () => {
+                    const quantity = parseInt(document.getElementById('quantityInput').value);
+                    addToCart(product.id, quantity, product.size);
+                });
+                
+                document.getElementById('backToProductsBtn').addEventListener('click', loadProductsPage);
+                
+                document.getElementById('shareWhatsAppBtn').addEventListener('click', () => {
+                    const message = `Check out this product from Frames Vizag:\n\n` +
+                                   `*${product.name}*\n` +
+                                   `Price: ₹${product.finalPrice}${product.mrp > product.finalPrice ? ` (was ₹${product.mrp})` : ''}\n` +
+                                   `Size: ${product.size}\n\n` +
+                                   `Order now: ${window.location.href.split('#')[0]}`;
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                });
+            });
+        }
+
+        function addToCart(productId, quantity = 1, size = 'One size') {
+            get(ref(db, 'products')).then((snapshot) => {
+                const allProducts = snapshot.val();
+                let product = null;
+                
+                // Find product in all categories
+                Object.values(allProducts).forEach(category => {
+                    if (category[productId]) {
+                        product = category[productId];
+                        product.id = productId;
+                    }
+                });
+                
+                if (!product) {
+                    alert('Product not found');
+                    return;
+                }
+                
+                // Check if product already in cart with same size
+                const existingItemIndex = cart.findIndex(item => 
+                    item.id === productId && item.size === size);
+                
+                if (existingItemIndex >= 0) {
+                    // Update quantity
+                    cart[existingItemIndex].quantity += quantity;
+                } else {
+                    // Add new item
+                    cart.push({
+                        id: productId,
+                        name: product.name,
+                        price: product.finalPrice,
+                        mrp: product.mrp,
+                        image: product.images?.[0] || 'images/placeholder.jpg',
+                        size: size,
+                        quantity: quantity
+                    });
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartCount();
+                
+                // Show success alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                alertDiv.style.zIndex = '1100';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>${product.name}</strong> added to cart!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(alertDiv);
+                
+                // Auto dismiss after 3 seconds
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alertDiv);
+                    bsAlert.close();
+                }, 3000);
+            });
+        }
+
+        function loadCartPage() {
+            mainContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h2 class="section-title mb-4">Your Shopping Cart</h2>
+                        ${cart.length === 0 ? `
+                            <div class="card">
+                                <div class="card-body text-center py-5">
+                                    <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+                                    <h4>Your cart is empty</h4>
+                                    <p class="text-muted">Looks like you haven't added anything to your cart yet</p>
+                                    <button class="btn btn-primary mt-3" id="continueShoppingBtn">
+                                        <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                                    </button>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Size</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cartItems">
+                                        <!-- Cart items will be loaded here -->
+                                    </tbody>
+                                    <tfoot class="table-group-divider">
+                                        <tr>
+                                            <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                                            <td id="cartSubtotal">₹0</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="text-end"><strong>Discount:</strong></td>
+                                            <td id="cartDiscount">-₹0</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr class="table-active">
+                                            <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                            <td id="cartTotal">₹0</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="couponCode" placeholder="Enter coupon code">
+                                        <button class="btn btn-outline-success" id="applyCouponBtn">Apply</button>
+                                    </div>
+                                    <div id="couponMessage" class="mt-2 small"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-outline-secondary" id="continueShoppingBtn">
+                                    <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                                </button>
+                                <button class="btn btn-primary" id="checkoutBtn">
+                                    Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        `}
+                    </div>
+                    
+                    ${cart.length > 0 ? `
+                    <div class="col-md-4 mt-4 mt-md-0">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Order Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush" id="orderSummary">
+                                    <!-- Order summary will be loaded here -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            if (cart.length > 0) {
+                const cartItemsContainer = document.getElementById('cartItems');
+                const orderSummaryContainer = document.getElementById('orderSummary');
+                let subtotal = 0;
+                
+                // Add cart items
+                cart.forEach((item, index) => {
+                    const itemTotal = item.price * item.quantity;
+                    subtotal += itemTotal;
+                    
+                    cartItemsContainer.innerHTML += `
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="${item.image}" width="60" class="rounded me-3">
+                                    <div>
+                                        <h6 class="mb-0">${item.name}</h6>
+                                        <small class="text-muted">${item.mrp > item.price ? `Save ₹${item.mrp - item.price}` : ''}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${item.size}</td>
+                            <td>₹${item.price}</td>
+                            <td>
+                                <input type="number" min="1" value="${item.quantity}" 
+                                       class="form-control quantity-input" 
+                                       style="width: 70px;"
+                                       data-index="${index}">
+                            </td>
+                            <td>₹${itemTotal}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger remove-item" data-index="${index}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    
+                    // Add to order summary
+                    orderSummaryContainer.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="my-0">${item.name}</h6>
+                                <small class="text-muted">${item.size} × ${item.quantity}</small>
+                            </div>
+                            <span class="text-muted">₹${itemTotal}</span>
+                        </li>
+                    `;
+                });
+                
+                // Update totals
+                document.getElementById('cartSubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+                document.getElementById('cartTotal').textContent = `₹${subtotal.toFixed(2)}`;
+                
+                // Add final total to order summary
+                orderSummaryContainer.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between bg-light">
+                        <span>Total (INR)</span>
+                        <strong>₹${subtotal.toFixed(2)}</strong>
+                    </li>
+                `;
+                
+                // Add event listeners
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const index = parseInt(e.target.getAttribute('data-index'));
+                        const newQuantity = parseInt(e.target.value);
+                        
+                        if (newQuantity > 0) {
+                            cart[index].quantity = newQuantity;
+                            localStorage.setItem('cart', JSON.stringify(cart));
+                            updateCartCount();
+                            loadCartPage(); // Refresh cart view
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('.remove-item').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.closest('button').getAttribute('data-index'));
+                        cart.splice(index, 1);
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        updateCartCount();
+                        loadCartPage(); // Refresh cart view
+                    });
+                });
+                
+                document.getElementById('applyCouponBtn').addEventListener('click', () => {
+                    const couponCode = document.getElementById('couponCode').value;
+                    const couponMessage = document.getElementById('couponMessage');
+                    
+                    if (!couponCode) {
+                        couponMessage.textContent = 'Please enter a coupon code';
+                        couponMessage.className = 'mt-2 small text-danger';
+                        return;
+                    }
+                    
+                    // In a real app, you would validate the coupon with Firebase
+                    // For now, we'll just simulate a 10% discount
+                    couponMessage.textContent = 'Coupon applied: 10% off your order';
+                    couponMessage.className = 'mt-2 small text-success';
+                    
+                    const discount = subtotal * 0.1;
+                    document.getElementById('cartDiscount').textContent = `-₹${discount.toFixed(2)}`;
+                    document.getElementById('cartTotal').textContent = `₹${(subtotal - discount).toFixed(2)}`;
+                });
+                
+                document.getElementById('checkoutBtn').addEventListener('click', () => {
+                    if (!currentUser) {
+                        alert('Please login to proceed to checkout');
+                        loginModal.show();
+                        return;
+                    }
+                    loadCheckoutPage();
+                });
+            }
+            
+            document.getElementById('continueShoppingBtn').addEventListener('click', loadProductsPage);
+        }
+
+        function loadCheckoutPage() {
+            // This would be your checkout page implementation
+            // For now, we'll just show a simple confirmation
+            mainContent.innerHTML = `
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-check-circle fa-4x text-success mb-4"></i>
+                                <h2>Checkout Coming Soon</h2>
+                                <p class="lead">The checkout functionality will be implemented in the next phase</p>
+                                <p>For now, please contact us at +91 7095615567 to complete your order</p>
+                                <button class="btn btn-primary mt-3" id="backToCartBtn">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('backToCartBtn').addEventListener('click', loadCartPage);
+        }
+
+        function loadAdminDashboard() {
+            // This would be your admin dashboard implementation
+            mainContent.innerHTML = `
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="section-title">Admin Dashboard</h2>
+                        <div class="alert alert-info">
+                            The admin dashboard will be implemented in the next phase
+                        </div>
+                        <button class="btn btn-outline-secondary" id="backToHomeBtn">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Home
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('backToHomeBtn').addEventListener('click', loadHomePage);
+        }
+    </script>
 </body>
 </html>
