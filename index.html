@@ -19,6 +19,7 @@
         .product-img { height: 200px; object-fit: cover; }
         .profile-img { width: 150px; height: 150px; object-fit: cover; }
         .tracking-progress { height: 20px; }
+        .admin-stats-card { border-left: 4px solid #0d6efd; }
     </style>
 </head>
 <body>
@@ -253,11 +254,45 @@
             </div>
             <div class="card-body">
                 <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Orders</h5>
+                                <h2 class="card-text" id="totalOrders">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Today's Orders</h5>
+                                <h2 class="card-text" id="todayOrders">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Monthly Revenue</h5>
+                                <h2 class="card-text" id="monthlyRevenue">₹0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Revenue</h5>
+                                <h2 class="card-text" id="totalRevenue">₹0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
                     <div class="col-md-8">
                         <div class="card">
-                            <div class="card-header">Turnover (Last 30 Days)</div>
+                            <div class="card-header">Revenue (Last 30 Days)</div>
                             <div class="card-body">
-                                <canvas id="turnoverChart" height="200"></canvas>
+                                <canvas id="revenueChart" height="200"></canvas>
                             </div>
                         </div>
                     </div>
@@ -453,6 +488,7 @@
         let currentUser = null;
         let orderModalInstance = null;
         let orderDetailsModalInstance = null;
+        let revenueChart = null;
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', () => {
@@ -549,7 +585,7 @@
             try {
                 for (const order of pendingOrders) {
                     await db.collection('orders').add(order);
-                    updateTurnover(order.totalAmount);
+                    updateRevenue(order.totalAmount);
                 }
                 localStorage.removeItem('pendingOrders');
                 showNotification("Sync Complete", "Your pending orders have been synced successfully!");
@@ -809,6 +845,7 @@
                 customerPhone: document.getElementById('orderCustomerPhone').value,
                 customerAddress: document.getElementById('orderCustomerAddress').value,
                 customerEmail: currentUser.email,
+                customerId: currentUser.uid,
                 orderDate: new Date().toISOString(),
                 status: 'Order Placed',
                 paymentStatus: 'Pending',
@@ -836,7 +873,7 @@
                     orderModalInstance.hide();
                     document.getElementById('orderForm').reset();
                     showNotification("Order Placed", "Your order has been placed successfully!");
-                    updateTurnover(order.totalAmount);
+                    updateRevenue(order.totalAmount);
                 })
                 .catch((error) => {
                     errorElement.textContent = error.message;
@@ -847,21 +884,21 @@
                 });
         }
 
-        // Update turnover in admin dashboard
-        function updateTurnover(amount) {
+        // Update revenue in admin dashboard
+        function updateRevenue(amount) {
             if (!currentUser || currentUser.email !== 'admin@gantasolutions.com') return;
             
             const today = new Date().toISOString().split('T')[0];
-            const turnoverRef = db.collection('turnover').doc(today);
+            const revenueRef = db.collection('revenue').doc(today);
             
-            turnoverRef.get().then(doc => {
+            revenueRef.get().then(doc => {
                 if (doc.exists) {
-                    turnoverRef.update({
+                    revenueRef.update({
                         amount: firebase.firestore.FieldValue.increment(amount),
                         lastUpdated: new Date().toISOString()
                     });
                 } else {
-                    turnoverRef.set({
+                    revenueRef.set({
                         date: today,
                         amount: amount,
                         lastUpdated: new Date().toISOString()
@@ -938,7 +975,7 @@
         // Initialize Admin Page
         function initAdminPage() {
             const ordersTableBody = document.getElementById('orders-table-body');
-            const turnoverChart = document.getElementById('turnoverChart');
+            const revenueChartCanvas = document.getElementById('revenueChart');
             const shippingChargesForm = document.getElementById('shippingChargesForm');
             
             // Load shipping charges
@@ -973,28 +1010,97 @@
                 });
             });
             
-            // Load turnover data
-            db.collection('turnover').orderBy('date', 'desc').limit(30).get()
+            // Load admin statistics
+            loadAdminStatistics();
+            
+            // Load revenue data and initialize chart
+            loadRevenueData();
+                
+            // Load orders
+            loadOrders();
+        }
+
+        // Load admin statistics
+        function loadAdminStatistics() {
+            // Total orders
+            db.collection('orders').get()
                 .then(querySnapshot => {
-                    const turnoverData = [];
+                    document.getElementById('totalOrders').textContent = querySnapshot.size;
+                });
+            
+            // Today's orders
+            const today = new Date().toISOString().split('T')[0];
+            const startOfToday = new Date(today);
+            const endOfToday = new Date(today);
+            endOfToday.setDate(endOfToday.getDate() + 1);
+            
+            db.collection('orders')
+                .where('orderDate', '>=', startOfToday.toISOString())
+                .where('orderDate', '<', endOfToday.toISOString())
+                .get()
+                .then(querySnapshot => {
+                    document.getElementById('todayOrders').textContent = querySnapshot.size;
+                });
+            
+            // Monthly revenue
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+            
+            db.collection('orders')
+                .where('orderDate', '>=', startOfMonth.toISOString())
+                .get()
+                .then(querySnapshot => {
+                    let monthlyRevenue = 0;
+                    querySnapshot.forEach(doc => {
+                        monthlyRevenue += doc.data().totalAmount || parseFloat(doc.data().productPrice.replace('₹', ''));
+                    });
+                    document.getElementById('monthlyRevenue').textContent = `₹${monthlyRevenue}`;
+                });
+            
+            // Total revenue
+            db.collection('revenue').get()
+                .then(querySnapshot => {
+                    let totalRevenue = 0;
+                    querySnapshot.forEach(doc => {
+                        totalRevenue += doc.data().amount;
+                    });
+                    document.getElementById('totalRevenue').textContent = `₹${totalRevenue}`;
+                });
+        }
+
+        // Load revenue data and initialize chart
+        function loadRevenueData() {
+            db.collection('revenue').orderBy('date', 'desc').limit(30).get()
+                .then(querySnapshot => {
+                    const revenueData = [];
                     const dates = [];
                     
                     querySnapshot.forEach(doc => {
-                        turnoverData.push(doc.data().amount);
+                        revenueData.push(doc.data().amount);
                         dates.push(doc.id);
                     });
                     
+                    // Reverse to show oldest first
+                    dates.reverse();
+                    revenueData.reverse();
+                    
                     // Initialize chart
-                    new Chart(turnoverChart, {
+                    if (revenueChart) {
+                        revenueChart.destroy();
+                    }
+                    
+                    revenueChart = new Chart(document.getElementById('revenueChart'), {
                         type: 'line',
                         data: {
-                            labels: dates.reverse(),
+                            labels: dates,
                             datasets: [{
-                                label: 'Daily Turnover (₹)',
-                                data: turnoverData.reverse(),
+                                label: 'Daily Revenue (₹)',
+                                data: revenueData,
                                 backgroundColor: 'rgba(13, 110, 253, 0.2)',
                                 borderColor: 'rgba(13, 110, 253, 1)',
-                                borderWidth: 1
+                                borderWidth: 1,
+                                tension: 0.1
                             }]
                         },
                         options: {
@@ -1007,8 +1113,12 @@
                         }
                     });
                 });
-                
-            // Load orders
+        }
+
+        // Load orders for admin
+        function loadOrders() {
+            const ordersTableBody = document.getElementById('orders-table-body');
+            
             db.collection('orders').orderBy('orderDate', 'desc').get()
                 .then((querySnapshot) => {
                     ordersTableBody.innerHTML = '';
@@ -1075,10 +1185,12 @@
                             showLoading();
                             db.collection('orders').doc(orderId).update({
                                 status: statusSelect.value,
-                                paymentStatus: paymentSelect.value
+                                paymentStatus: paymentSelect.value,
+                                updatedAt: new Date().toISOString()
                             })
                             .then(() => {
                                 showNotification("Success", "Order updated successfully");
+                                loadAdminStatistics(); // Refresh stats
                             })
                             .catch((error) => {
                                 showNotification("Error", "Failed to update order");
