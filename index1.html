@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frames Vizag - Custom Photo Frames</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <style>
+        .product-card, .order-card { transition: transform 0.3s; margin-bottom: 20px; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .order-card { border-left: 4px solid #0d6efd; }
+        .status-badge { font-size: 0.8rem; }
+        .template { display: none; }
+        #loadingSpinner { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .product-img { height: 200px; object-fit: cover; }
+        .profile-img { width: 150px; height: 150px; object-fit: cover; }
+        .tracking-progress { height: 20px; }
+        .admin-stats-card { border-left: 4px solid #0d6efd; }
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1200&auto=format&fit=crop&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 40px;
+            border-radius: 10px;
+        }
+        .price-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .rating {
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#" id="homeLink">Frames Vizag</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="homeNavLink">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="productsNavLink">Products</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav" id="authNav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="loginNavLink">Login</a>
+                    </li>
+                    <li class="nav-item d-none" id="profileNavItem">
+                        <a class="nav-link" href="#" id="profileNavLink">
+                            <i class="fas fa-user-circle"></i> Profile
+                        </a>
+                    </li>
+                </ul>
+                <span class="badge bg-warning text-dark d-none ms-2" id="offlineBadge">Offline</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="container my-5" id="main-content">
+        <!-- Content will be dynamically loaded here -->
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="overlay" id="overlay"></div>
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" id="loadingSpinner" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+
+    <!-- Order Modal -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Place Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="orderForm">
+                        <input type="hidden" id="orderProductId">
+                        <div class="mb-3">
+                            <label class="form-label">Product</label>
+                            <input type="text" class="form-control" id="orderProductName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Size</label>
+                            <input type="text" class="form-control" id="orderProductSize" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="text" class="form-control" id="orderProductPrice" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Shipping Option</label>
+                            <select class="form-control" id="shippingOption" required>
+                                <option value="standard">Standard Delivery (₹<span id="standardCharge">50</span>)</option>
+                                <option value="express">Express Delivery (₹<span id="expressCharge">100</span>)</option>
+                            </select>
+                        </div>
+                        <input type="hidden" id="shippingCharge" value="50">
+                        <div class="mb-3">
+                            <label class="form-label">Total Amount</label>
+                            <input type="text" class="form-control" id="orderTotalAmount" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="orderCustomerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="orderCustomerPhone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Delivery Address</label>
+                            <textarea class="form-control" id="orderCustomerAddress" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="orderNotes" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Place Order</button>
+                    </form>
+                    <div class="alert alert-danger mt-3 d-none" id="orderError"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details <span id="orderDetailsId"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Product Information</h6>
+                            <p><strong>Product:</strong> <span id="orderDetailsProduct"></span></p>
+                            <p><strong>Price:</strong> <span id="orderDetailsPrice"></span></p>
+                            <p><strong>Shipping:</strong> <span id="orderDetailsShipping"></span></p>
+                            <p><strong>Total Amount:</strong> <span id="orderDetailsTotal"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Order Status</h6>
+                            <p><strong>Status:</strong> <span id="orderDetailsStatus"></span></p>
+                            <p><strong>Payment:</strong> <span id="orderDetailsPayment"></span></p>
+                            <p><strong>Order Date:</strong> <span id="orderDetailsDate"></span></p>
+                            <div id="orderDetailsTracking"></div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Delivery Address</h6>
+                            <p id="orderDetailsAddress"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Additional Notes</h6>
+                            <p id="orderDetailsNotes"></p>
+                        </div>
+                    </div>
+                    <div class="mt-4" id="trackingProgressContainer">
+                        <h6>Order Progress</h6>
+                        <div class="progress tracking-progress mb-3">
+                            <div class="progress-bar" id="trackingProgressBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Order Placed</span>
+                            <span class="text-muted">Processing</span>
+                            <span class="text-muted">Shipped</span>
+                            <span class="text-muted">Delivered</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates -->
+    <div class="template" id="home-template">
+        <div class="hero-section text-center">
+            <h1 class="display-4">Custom Photo Frames</h1>
+            <p class="lead">Premium quality frames made with care in Vizag</p>
+            <button class="btn btn-primary btn-lg mt-3" id="viewProductsBtn">Shop Now</button>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Featured Products</h2>
+            </div>
+            <div class="row" id="featured-products-container"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-truck fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Fast Delivery</h5>
+                        <p class="card-text">Get your frames delivered within 3-5 business days.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Premium Quality</h5>
+                        <p class="card-text">Made with high-quality materials for long-lasting durability.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">24/7 Support</h5>
+                        <p class="card-text">Our customer service team is always ready to help you.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="template" id="products-template">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Our Frame Collection</h2>
+            </div>
+        </div>
+        <div class="row" id="products-container"></div>
+    </div>
+
+    <div class="template" id="login-template">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Login / Register</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="authForm">
+                            <div class="mb-3">
+                                <label for="loginEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="loginEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="loginPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="loginPassword" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mb-2" id="loginBtn">Login</button>
+                            <button type="button" class="btn btn-outline-primary w-100" id="registerBtn">Register</button>
+                        </form>
+                        <div class="alert alert-danger mt-3 d-none" id="authError"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="template" id="admin-template">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Admin Dashboard</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Orders</h5>
+                                <h2 class="card-text" id="totalOrders">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Today's Orders</h5>
+                                <h2 class="card-text" id="todayOrders">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Monthly Revenue</h5>
+                                <h2 class="card-text" id="monthlyRevenue">₹0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card admin-stats-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Revenue</h5>
+                                <h2 class="card-text" id="totalRevenue">₹0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">Revenue (Last 30 Days)</div>
+                            <div class="card-body">
+                                <canvas id="revenueChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">Shipping Charges</div>
+                            <div class="card-body">
+                                <form id="shippingChargesForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Standard Delivery (₹)</label>
+                                        <input type="number" class="form-control" id="standardShipping" min="0" step="10" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Express Delivery (₹)</label>
+                                        <input type="number" class="form-control" id="expressShipping" min="0" step="10" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Update Charges</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="template" id="user-orders-template">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-4">My Orders</h2>
+                <div class="mb-3">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" data-status="all">All Orders</button>
+                        <button type="button" class="btn btn-outline-primary" data-status="processing">Processing</button>
+                        <button type="button" class="btn btn-outline-primary" data-status="shipped">Shipped</button>
+                        <button type="button" class="btn btn-outline-primary" data-status="delivered">Delivered</button>
+                    </div>
+                </div>
+                <div id="user-orders-container" class="row"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="template" id="profile-template">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">My Profile</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <img src="https://via.placeholder.com/150" id="profileImage" class="rounded-circle mb-3 profile-img" alt="Profile">
+                                <input type="file" id="imageUpload" class="d-none" accept="image/*">
+                                <button class="btn btn-sm btn-outline-primary" id="changeImageBtn">Change Image</button>
+                            </div>
+                            <div class="col-md-8">
+                                <form id="profileForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="profileName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="profileEmail" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="profilePhone" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Address</label>
+                                        <textarea class="form-control" id="profileAddress" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                                    <button type="button" class="btn btn-danger ms-2" id="logoutBtn">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & Firebase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6ShFd_7VAHtkRUg9k6YEvNSXqKMRvuic",
+            authDomain: "framesvizag.firebaseapp.com",
+            projectId: "framesvizag",
+            storageBucket: "framesvizag.appspot.com",
+            messagingSenderId: "128117311675",
+            appId: "1:128117311675:web:8a817b1efb0c0e7bfb419e",
+            measurementId: "G-0EKRGC9748"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // Enable offline persistence
+        db.enablePersistence()
+            .catch((err) => {
+                console.log("Firebase offline persistence error: ", err);
+                if (err.code == 'failed-precondition') {
+                    showNotification("Warning", "Offline mode is not supported in multiple tabs");
+                }
+            });
+
+        // Product data with images
+        const products = [
+            {
+                id: "frame-30x40",
+                size: "30 x 40",
+                name: "Custom frame with picture",
+                finalPrice: 3000,
+                mrp: 5000,
+                offer: "₹2000 OFF",
+                image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=500&auto=format&fit=crop&q=60",
+                description: "Premium wooden frame with glass cover",
+                featured: true,
+                rating: 4.5
+            },
+            {
+                id: "mount-frame",
+                size: "Mount Frame",
+                name: "General mount frame",
+                finalPrice: 599,
+                mrp: 1500,
+                offer: "₹901 OFF",
+                image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f8e1c1?w=500&auto=format&fit=crop&q=60",
+                description: "Standard mount frame for all occasions",
+                featured: true,
+                rating: 4.2
+            },
+            {
+                id: "frame-24x36",
+                size: "24 x 36",
+                name: "Standard size frame",
+                finalPrice: 2000,
+                mrp: 4500,
+                offer: "₹2500 OFF",
+                image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&auto=format&fit=crop&q=60",
+                description: "Classic wooden frame with matte finish",
+                featured: true,
+                rating: 4.7
+            },
+            {
+                id: "frame-20x30",
+                size: "20 x 30",
+                name: "Medium frame",
+                finalPrice: 1500,
+                mrp: 3000,
+                offer: "₹1500 OFF",
+                image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=500&auto=format&fit=crop&q=60",
+                description: "Modern design with protective glass",
+                featured: false,
+                rating: 4.3
+            },
+            {
+                id: "frame-12x18",
+                size: "12 x 18",
+                name: "Small frame",
+                finalPrice: 300,
+                mrp: 600,
+                offer: "₹300 OFF",
+                image: "https://images.unsplash.com/photo-1614730324166-44e7e3c9398c?w=500&auto=format&fit=crop&q=60",
+                description: "Compact frame perfect for desk photos",
+                featured: false,
+                rating: 4.0
+            }
+        ];
+
+        // Global variables
+        let currentUser = null;
+        let orderModalInstance = null;
+        let orderDetailsModalInstance = null;
+        let revenueChart = null;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize modals
+            orderModalInstance = new bootstrap.Modal(document.getElementById('orderModal'));
+            orderDetailsModalInstance = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+            
+            // Set up order form submission
+            document.getElementById('orderForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                placeOrder();
+            });
+
+            // Set up shipping option change
+            document.getElementById('shippingOption').addEventListener('change', updateOrderTotal);
+
+            // Set up navigation event listeners
+            document.getElementById('homeLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadPage('home');
+            });
+            
+            document.getElementById('homeNavLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadPage('home');
+            });
+            
+            document.getElementById('productsNavLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadPage('products');
+            });
+            
+            document.getElementById('loginNavLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadPage('login');
+            });
+            
+            document.getElementById('profileNavLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadPage('profile');
+            });
+
+            // Set up online/offline detection
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+
+            // Set up auth state listener
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                updateAuthUI();
+                
+                // Load appropriate page based on URL hash
+                if (window.location.hash) {
+                    loadPage(window.location.hash.substring(1));
+                } else {
+                    loadPage('home');
+                }
+            });
+        });
+
+        // Update online status
+        function updateOnlineStatus() {
+            if (!navigator.onLine) {
+                showNotification("Offline Mode", "You're currently offline. Orders will be synced when you're back online.");
+                document.getElementById('offlineBadge').classList.remove('d-none');
+            } else {
+                document.getElementById('offlineBadge').classList.add('d-none');
+                syncPendingOrders();
+            }
+        }
+
+        // Show notification
+        function showNotification(title, message) {
+            if (!("Notification" in window)) return;
+            
+            if (Notification.permission === "granted") {
+                new Notification(title, { body: message });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(title, { body: message });
+                    }
+                });
+            }
+        }
+
+        // Sync pending orders when back online
+        async function syncPendingOrders() {
+            const pendingOrders = JSON.parse(localStorage.getItem('pendingOrders') || '[]');
+            if (pendingOrders.length === 0) return;
+
+            showLoading();
+            try {
+                for (const order of pendingOrders) {
+                    await db.collection('orders').add(order);
+                    updateRevenue(order.totalAmount);
+                }
+                localStorage.removeItem('pendingOrders');
+                showNotification("Sync Complete", "Your pending orders have been synced successfully!");
+            } catch (error) {
+                console.error("Error syncing orders:", error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Load a page template
+        function loadPage(page) {
+            showLoading();
+            window.location.hash = page;
+            const mainContent = document.getElementById('main-content');
+            const template = document.getElementById(`${page}-template`);
+            
+            if (template) {
+                mainContent.innerHTML = template.innerHTML;
+                
+                // Initialize the loaded page
+                switch(page) {
+                    case 'home':
+                        initHomePage();
+                        break;
+                    case 'products':
+                        initProductsPage();
+                        break;
+                    case 'login':
+                        initLoginPage();
+                        break;
+                    case 'admin':
+                        if (currentUser?.email === 'admin@gantasolutions.com') {
+                            initAdminPage();
+                        } else {
+                            loadPage('login');
+                        }
+                        break;
+                    case 'user-orders':
+                        if (currentUser) {
+                            initUserOrdersPage();
+                        } else {
+                            loadPage('login');
+                        }
+                        break;
+                    case 'profile':
+                        if (currentUser) {
+                            initProfilePage();
+                        } else {
+                            loadPage('login');
+                        }
+                        break;
+                }
+            } else {
+                mainContent.innerHTML = '<div class="alert alert-danger">Page not found</div>';
+            }
+            hideLoading();
+        }
+
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Update authentication UI
+        function updateAuthUI() {
+            const authNav = document.getElementById('authNav');
+            authNav.innerHTML = '';
+            
+            if (currentUser) {
+                // User is logged in
+                if (currentUser.email === 'admin@gantasolutions.com') {
+                    authNav.innerHTML = `
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="adminNavLink">Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="logoutNavLink">Logout</a>
+                        </li>
+                    `;
+                    
+                    document.getElementById('adminNavLink').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        loadPage('admin');
+                    });
+                } else {
+                    authNav.innerHTML = `
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="userOrdersNavLink">My Orders</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="logoutNavLink">Logout</a>
+                        </li>
+                    `;
+                    
+                    document.getElementById('userOrdersNavLink').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        loadPage('user-orders');
+                    });
+                }
+                
+                // Show profile link
+                document.getElementById('profileNavItem').classList.remove('d-none');
+                
+                document.getElementById('logoutNavLink').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut().then(() => {
+                        loadPage('home');
+                    });
+                });
+            } else {
+                // User is logged out
+                authNav.innerHTML = `
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="loginNavLink">Login</a>
+                    </li>
+                `;
+                
+                // Hide profile link
+                document.getElementById('profileNavItem').classList.add('d-none');
+                
+                document.getElementById('loginNavLink').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadPage('login');
+                });
+            }
+        }
+
+        // Initialize Home Page
+        function initHomePage() {
+            // Display featured products
+            const container = document.getElementById('featured-products-container');
+            container.innerHTML = '';
+            
+            const featuredProducts = products.filter(p => p.featured);
+            
+            featuredProducts.forEach(product => {
+                const card = `
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="card product-card h-100">
+                            <div class="position-relative">
+                                <img src="${product.image}" class="card-img-top product-img" alt="${product.name}">
+                                <div class="product-badge">${product.offer}</div>
+                                <div class="price-tag">₹${product.finalPrice}</div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${product.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${product.size}</h6>
+                                <div class="rating">
+                                    ${renderStars(product.rating)}
+                                    <small class="text-muted">(${product.rating})</small>
+                                </div>
+                                <p class="card-text">${product.description}</p>
+                                <button class="btn btn-primary w-100 order-btn" data-id="${product.id}">
+                                    Order Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+            
+            document.getElementById('viewProductsBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadPage('products');
+            });
+            
+            // Add event listeners to order buttons
+            document.querySelectorAll('.order-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    if (!currentUser) {
+                        showNotification("Login Required", "Please login to place an order");
+                        loadPage('login');
+                        return;
+                    }
+
+                    const productId = e.target.getAttribute('data-id');
+                    const product = products.find(p => p.id === productId);
+                    
+                    document.getElementById('orderProductId').value = product.id;
+                    document.getElementById('orderProductName').value = product.name;
+                    document.getElementById('orderProductSize').value = product.size;
+                    document.getElementById('orderProductPrice').value = `₹${product.finalPrice}`;
+                    
+                    // Set shipping options
+                    document.getElementById('standardCharge').textContent = '50';
+                    document.getElementById('expressCharge').textContent = '100';
+                    document.getElementById('shippingCharge').value = '50';
+                    
+                    // Clear previous values
+                    document.getElementById('orderCustomerName').value = currentUser?.displayName || '';
+                    document.getElementById('orderCustomerPhone').value = '';
+                    document.getElementById('orderCustomerAddress').value = '';
+                    document.getElementById('orderNotes').value = '';
+                    
+                    updateOrderTotal();
+                    orderModalInstance.show();
+                });
+            });
+        }
+
+        // Render star ratings
+        function renderStars(rating) {
+            let stars = '';
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="fas fa-star"></i>';
+            }
+            
+            if (hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt"></i>';
+            }
+            
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '<i class="far fa-star"></i>';
+            }
+            
+            return stars;
+        }
+
+        // Initialize Products Page
+        function initProductsPage() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            
+            products.forEach(product => {
+                const card = `
+                    <div class="col-md-4 col-sm-6 mb-4">
+                        <div class="card product-card h-100">
+                            <div class="position-relative">
+                                <img src="${product.image}" class="card-img-top product-img" alt="${product.name}">
+                                <div class="product-badge">${product.offer}</div>
+                                <div class="price-tag">₹${product.finalPrice}</div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${product.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${product.size}</h6>
+                                <div class="rating">
+                                    ${renderStars(product.rating)}
+                                    <small class="text-muted">(${product.rating})</small>
+                                </div>
+                                <p class="card-text">${product.description}</p>
+                                <button class="btn btn-primary w-100 order-btn" data-id="${product.id}">
+                                    Order Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+            
+            // Add event listeners to order buttons
+            document.querySelectorAll('.order-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    if (!currentUser) {
+                        showNotification("Login Required", "Please login to place an order");
+                        loadPage('login');
+                        return;
+                    }
+
+                    const productId = e.target.getAttribute('data-id');
+                    const product = products.find(p => p.id === productId);
+                    
+                    document.getElementById('orderProductId').value = product.id;
+                    document.getElementById('orderProductName').value = product.name;
+                    document.getElementById('orderProductSize').value = product.size;
+                    document.getElementById('orderProductPrice').value = `₹${product.finalPrice}`;
+                    
+                    // Set shipping options
+                    document.getElementById('standardCharge').textContent = '50';
+                    document.getElementById('expressCharge').textContent = '100';
+                    document.getElementById('shippingCharge').value = '50';
+                    
+                    // Clear previous values
+                    document.getElementById('orderCustomerName').value = currentUser?.displayName || '';
+                    document.getElementById('orderCustomerPhone').value = '';
+                    document.getElementById('orderCustomerAddress').value = '';
+                    document.getElementById('orderNotes').value = '';
+                    
+                    updateOrderTotal();
+                    orderModalInstance.show();
+                });
+            });
+        }
+
+        // Update order total when shipping option changes
+        function updateOrderTotal() {
+            const shippingOption = document.getElementById('shippingOption').value;
+            const productPrice = parseFloat(document.getElementById('orderProductPrice').value.replace('₹', ''));
+            let shippingCharge = 0;
+            
+            if (shippingOption === 'standard') {
+                shippingCharge = 50;
+            } else if (shippingOption === 'express') {
+                shippingCharge = 100;
+            }
+            
+            document.getElementById('shippingCharge').value = shippingCharge;
+            const totalAmount = productPrice + shippingCharge;
+            document.getElementById('orderTotalAmount').value = `₹${totalAmount}`;
+        }
+
+        // Place an order
+        function placeOrder() {
+            if (!currentUser) {
+                orderModalInstance.hide();
+                loadPage('login');
+                showNotification("Login Required", "You need to login to place an order");
+                return;
+            }
+
+            showLoading();
+            const errorElement = document.getElementById('orderError');
+            errorElement.classList.add('d-none');
+            
+            const shippingCharge = parseFloat(document.getElementById('shippingCharge').value) || 0;
+            const productPrice = parseFloat(document.getElementById('orderProductPrice').value.replace('₹', ''));
+            
+            const order = {
+                productId: document.getElementById('orderProductId').value,
+                productName: document.getElementById('orderProductName').value,
+                productSize: document.getElementById('orderProductSize').value,
+                productPrice: `₹${productPrice}`,
+                shippingCharge: shippingCharge,
+                totalAmount: productPrice + shippingCharge,
+                customerName: document.getElementById('orderCustomerName').value,
+                customerPhone: document.getElementById('orderCustomerPhone').value,
+                customerAddress: document.getElementById('orderCustomerAddress').value,
+                customerEmail: currentUser.email,
+                customerId: currentUser.uid,
+                orderDate: new Date().toISOString(),
+                status: 'Order Placed',
+                paymentStatus: 'Pending',
+                courierInfo: '',
+                trackingNumber: '',
+                notes: document.getElementById('orderNotes').value || ''
+            };
+
+            // Handle offline orders
+            if (!navigator.onLine) {
+                const pendingOrders = JSON.parse(localStorage.getItem('pendingOrders') || '[]');
+                pendingOrders.push(order);
+                localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
+                
+                orderModalInstance.hide();
+                document.getElementById('orderForm').reset();
+                showNotification("Order Saved", "Your order has been saved and will be processed when you're back online");
+                hideLoading();
+                return;
+            }
+
+            // Online order processing
+            db.collection('orders').add(order)
+                .then(() => {
+                    orderModalInstance.hide();
+                    document.getElementById('orderForm').reset();
+                    showNotification("Order Placed", "Your order has been placed successfully!");
+                    updateRevenue(order.totalAmount);
+                })
+                .catch((error) => {
+                    errorElement.textContent = error.message;
+                    errorElement.classList.remove('d-none');
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
+
+        // Update revenue in admin dashboard
+        function updateRevenue(amount) {
+            if (!currentUser || currentUser.email !== 'admin@gantasolutions.com') return;
+            
+            const today = new Date().toISOString().split('T')[0];
+            const revenueRef = db.collection('revenue').doc(today);
+            
+            revenueRef.get().then(doc => {
+                if (doc.exists) {
+                    revenueRef.update({
+                        amount: firebase.firestore.FieldValue.increment(amount),
+                        lastUpdated: new Date().toISOString()
+                    });
+                } else {
+                    revenueRef.set({
+                        date: today,
+                        amount: amount,
+                        lastUpdated: new Date().toISOString()
+                    });
+                }
+            });
+        }
+
+        // Initialize Login Page
+        function initLoginPage() {
+            const authForm = document.getElementById('authForm');
+            const authError = document.getElementById('authError');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            
+            // Toggle between login and register
+            registerBtn.addEventListener('click', () => {
+                if (loginBtn.textContent === 'Login') {
+                    loginBtn.textContent = 'Register';
+                    registerBtn.textContent = 'Back to Login';
+                    authError.classList.add('d-none');
+                } else {
+                    loginBtn.textContent = 'Login';
+                    registerBtn.textContent = 'Register';
+                    authError.classList.add('d-none');
+                }
+            });
+            
+            // Handle form submission
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                const isLogin = loginBtn.textContent === 'Login';
+                
+                showLoading();
+                authError.classList.add('d-none');
+                
+                if (isLogin) {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .then(() => {
+                            loadPage('home');
+                        })
+                        .catch((error) => {
+                            authError.textContent = error.message;
+                            authError.classList.remove('d-none');
+                        })
+                        .finally(() => {
+                            hideLoading();
+                        });
+                } else {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then(() => {
+                            authError.textContent = 'Registration successful! Please login.';
+                            authError.classList.remove('d-none');
+                            authError.classList.remove('alert-danger');
+                            authError.classList.add('alert-success');
+                            loginBtn.textContent = 'Login';
+                            registerBtn.textContent = 'Register';
+                        })
+                        .catch((error) => {
+                            authError.textContent = error.message;
+                            authError.classList.remove('d-none');
+                            authError.classList.remove('alert-success');
+                            authError.classList.add('alert-danger');
+                        })
+                        .finally(() => {
+                            hideLoading();
+                        });
+                }
+            });
+        }
+
+        // Initialize Admin Page
+        function initAdminPage() {
+            const ordersTableBody = document.getElementById('orders-table-body');
+            const revenueChartCanvas = document.getElementById('revenueChart');
+            const shippingChargesForm = document.getElementById('shippingChargesForm');
+            
+            // Load shipping charges
+            db.collection('settings').doc('shippingCharges').get()
+                .then(doc => {
+                    if (doc.exists) {
+                        document.getElementById('standardShipping').value = doc.data().standard || 50;
+                        document.getElementById('expressShipping').value = doc.data().express || 100;
+                    }
+                });
+                
+            // Save shipping charges
+            shippingChargesForm.addEventListener('submit', e => {
+                e.preventDefault();
+                showLoading();
+                
+                db.collection('settings').doc('shippingCharges').set({
+                    standard: parseFloat(document.getElementById('standardShipping').value) || 50,
+                    express: parseFloat(document.getElementById('expressShipping').value) || 100,
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: currentUser.email
+                })
+                .then(() => {
+                    showNotification("Success", "Shipping charges updated successfully");
+                })
+                .catch(error => {
+                    showNotification("Error", "Failed to update shipping charges");
+                    console.error(error);
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+            });
+            
+            // Load admin statistics
+            loadAdminStatistics();
+            
+            // Load revenue data and initialize chart
+            loadRevenueData();
+                
+            // Load orders
+            loadOrders();
+        }
+
+        // Load admin statistics
+        function loadAdminStatistics() {
+            // Total orders
+            db.collection('orders').get()
+                .then(querySnapshot => {
+                    document.getElementById('totalOrders').textContent = querySnapshot.size;
+                });
+            
+            // Today's orders
+            const today = new Date().toISOString().split('T')[0];
+            const startOfToday = new Date(today);
+            const endOfToday = new Date(today);
+            endOfToday.setDate(endOfToday.getDate() + 1);
+            
+            db.collection('orders')
+                .where('orderDate', '>=', startOfToday.toISOString())
+                .where('orderDate', '<', endOfToday.toISOString())
+                .get()
+                .then(querySnapshot => {
+                    document.getElementById('todayOrders').textContent = querySnapshot.size;
+                });
+            
+            // Monthly revenue
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+            
+            db.collection('orders')
+                .where('orderDate', '>=', startOfMonth.toISOString())
+                .get()
+                .then(querySnapshot => {
+                    let monthlyRevenue = 0;
+                    querySnapshot.forEach(doc => {
+                        monthlyRevenue += doc.data().totalAmount || parseFloat(doc.data().productPrice.replace('₹', ''));
+                    });
+                    document.getElementById('monthlyRevenue').textContent = `₹${monthlyRevenue}`;
+                });
+            
+            // Total revenue
+            db.collection('revenue').get()
+                .then(querySnapshot => {
+                    let totalRevenue = 0;
+                    querySnapshot.forEach(doc => {
+                        totalRevenue += doc.data().amount;
+                    });
+                    document.getElementById('totalRevenue').textContent = `₹${totalRevenue}`;
+                });
+        }
+
+        // Load revenue data and initialize chart
+        function loadRevenueData() {
+            db.collection('revenue').orderBy('date', 'desc').limit(30).get()
+                .then(querySnapshot => {
+                    const revenueData = [];
+                    const dates = [];
+                    
+                    querySnapshot.forEach(doc => {
+                        revenueData.push(doc.data().amount);
+                        dates.push(doc.id);
+                    });
+                    
+                    // Reverse to show oldest first
+                    dates.reverse();
+                    revenueData.reverse();
+                    
+                    // Initialize chart
+                    if (revenueChart) {
+                        revenueChart.destroy();
+                    }
+                    
+                    revenueChart = new Chart(document.getElementById('revenueChart'), {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Daily Revenue (₹)',
+                                data: revenueData,
+                                backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                                borderColor: 'rgba(13, 110, 253, 1)',
+                                borderWidth: 1,
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                });
+        }
+
+        // Load orders for admin
+        function loadOrders() {
+            const ordersTableBody = document.getElementById('orders-table-body');
+            
+            db.collection('orders').orderBy('orderDate', 'desc').get()
+                .then((querySnapshot) => {
+                    ordersTableBody.innerHTML = '';
+                    
+                    if (querySnapshot.empty) {
+                        ordersTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center">No orders found</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    querySnapshot.forEach((doc) => {
+                        const order = doc.data();
+                        const orderId = doc.id;
+                        
+                        const statusOptions = ['Order Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+                        const paymentOptions = ['Pending', 'Paid', 'Failed'];
+                        
+                        let statusSelect = `<select class="form-select form-select-sm status-select" data-order-id="${orderId}">`;
+                        statusOptions.forEach(option => {
+                            statusSelect += `<option value="${option}" ${option === order.status ? 'selected' : ''}>${option}</option>`;
+                        });
+                        statusSelect += `</select>`;
+                        
+                        let paymentSelect = `<select class="form-select form-select-sm payment-select" data-order-id="${orderId}">`;
+                        paymentOptions.forEach(option => {
+                            paymentSelect += `<option value="${option}" ${option === order.paymentStatus ? 'selected' : ''}>${option}</option>`;
+                        });
+                        paymentSelect += `</select>`;
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${orderId.substring(0, 8)}...</td>
+                            <td>${order.productName} (${order.productSize})</td>
+                            <td>${order.customerName}</td>
+                            <td>${order.customerPhone}</td>
+                            <td>${statusSelect}</td>
+                            <td>${paymentSelect}</td>
+                            <td>₹${order.totalAmount || order.productPrice.replace('₹', '')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary update-btn" data-order-id="${orderId}">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-info ms-1 view-btn" data-order-id="${orderId}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        `;
+                        
+                        ordersTableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to update buttons
+                    document.querySelectorAll('.update-btn').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const orderId = e.target.getAttribute('data-order-id') || 
+                                         e.target.closest('.update-btn').getAttribute('data-order-id');
+                            
+                            const statusSelect = document.querySelector(`.status-select[data-order-id="${orderId}"]`);
+                            const paymentSelect = document.querySelector(`.payment-select[data-order-id="${orderId}"]`);
+                            
+                            showLoading();
+                            db.collection('orders').doc(orderId).update({
+                                status: statusSelect.value,
+                                paymentStatus: paymentSelect.value,
+                                updatedAt: new Date().toISOString()
+                            })
+                            .then(() => {
+                                showNotification("Success", "Order updated successfully");
+                                loadAdminStatistics(); // Refresh stats
+                            })
+                            .catch((error) => {
+                                showNotification("Error", "Failed to update order");
+                                console.error(error);
+                            })
+                            .finally(() => {
+                                hideLoading();
+                            });
+                        });
+                    });
+
+                    // Add event listeners to view buttons
+                    document.querySelectorAll('.view-btn').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const orderId = e.target.getAttribute('data-order-id') || 
+                                         e.target.closest('.view-btn').getAttribute('data-order-id');
+                            showOrderDetails(orderId);
+                        });
+                    });
+                })
+                .catch((error) => {
+                    ordersTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center text-danger">Error loading orders: ${error.message}</td>
+                        </tr>
+                    `;
+                });
+        }
+
+        // Initialize User Orders Page
+        function initUserOrdersPage() {
+            const ordersContainer = document.getElementById('user-orders-container');
+            let currentFilter = 'all';
+
+            // Filter buttons
+            document.querySelectorAll('[data-status]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.status;
+                    loadOrders();
+                });
+            });
+
+            function loadOrders() {
+                let query = db.collection('orders')
+                    .where('customerEmail', '==', currentUser.email)
+                    .orderBy('orderDate', 'desc');
+
+                if (currentFilter !== 'all') {
+                    query = query.where('status', '==', capitalizeFirstLetter(currentFilter));
+                }
+
+                showLoading();
+                query.get()
+                    .then((querySnapshot) => {
+                        ordersContainer.innerHTML = '';
+                        
+                        if (querySnapshot.empty) {
+                            ordersContainer.innerHTML = `
+                                <div class="col-12">
+                                    <div class="alert alert-info">No orders found</div>
+                                </div>
+                            `;
+                            return;
+                        }
+                        
+                        querySnapshot.forEach((doc) => {
+                            const order = doc.data();
+                            const orderId = doc.id;
+                            const orderCard = createOrderCard(order, orderId);
+                            ordersContainer.appendChild(orderCard);
+                        });
+                    })
+                    .catch((error) => {
+                        ordersContainer.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-danger">Error loading orders: ${error.message}</div>
+                            </div>
+                        `;
+                    })
+                    .finally(() => {
+                        hideLoading();
+                    });
+            }
+
+            function createOrderCard(order, orderId) {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'col-md-6';
+                
+                const statusClass = getStatusClass(order.status);
+                const paymentClass = getPaymentClass(order.paymentStatus);
+                const orderDate = new Date(order.orderDate).toLocaleString();
+                const trackingInfo = order.trackingNumber ? 
+                    `<p><strong>Tracking:</strong> <a href="#" class="track-order" data-id="${orderId}">${order.trackingNumber}</a></p>` : '';
+                
+                orderCard.innerHTML = `
+                    <div class="card mb-3 order-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title">${order.productName}</h5>
+                                <small class="text-muted">${orderDate}</small>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted">${order.productSize}</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Status:</strong> <span class="badge ${statusClass}">${order.status}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Payment:</strong> <span class="badge ${paymentClass}">${order.paymentStatus}</span></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <p><strong>Amount:</strong> ₹${order.totalAmount || order.productPrice.replace('₹', '')}</p>
+                                    ${trackingInfo}
+                                    <button class="btn btn-sm btn-outline-primary view-order-details" data-id="${orderId}">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                return orderCard;
+            }
+
+            // Load initial orders
+            loadOrders();
+
+            // Add event delegation for tracking and details
+            ordersContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('track-order')) {
+                    e.preventDefault();
+                    const orderId = e.target.dataset.id;
+                    showTrackingInfo(orderId);
+                }
+                
+                if (e.target.classList.contains('view-order-details')) {
+                    const orderId = e.target.dataset.id;
+                    showOrderDetails(orderId);
+                }
+            });
+        }
+
+        // Initialize Profile Page
+        function initProfilePage() {
+            // Load profile data
+            db.collection('users').doc(currentUser.uid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        document.getElementById('profileName').value = data.name || '';
+                        document.getElementById('profileEmail').value = currentUser.email;
+                        document.getElementById('profilePhone').value = data.phone || '';
+                        document.getElementById('profileAddress').value = data.address || '';
+                        if (data.profileImage) {
+                            document.getElementById('profileImage').src = data.profileImage;
+                        }
+                    } else {
+                        // Create profile if doesn't exist
+                        db.collection('users').doc(currentUser.uid).set({
+                            email: currentUser.email,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+                });
+
+            // Handle image upload
+            document.getElementById('changeImageBtn').addEventListener('click', () => {
+                document.getElementById('imageUpload').click();
+            });
+
+            document.getElementById('imageUpload').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    showLoading();
+                    const storageRef = storage.ref(`profile_images/${currentUser.uid}`);
+                    storageRef.put(file).then(snapshot => {
+                        return snapshot.ref.getDownloadURL();
+                    }).then(url => {
+                        document.getElementById('profileImage').src = url;
+                        return db.collection('users').doc(currentUser.uid).update({
+                            profileImage: url
+                        });
+                    }).catch(error => {
+                        console.error("Error uploading image:", error);
+                        showNotification("Error", "Failed to upload profile image");
+                    }).finally(() => {
+                        hideLoading();
+                    });
+                }
+            });
+
+            // Handle form submission
+            document.getElementById('profileForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                showLoading();
+                
+                const profileData = {
+                    name: document.getElementById('profileName').value,
+                    phone: document.getElementById('profilePhone').value,
+                    address: document.getElementById('profileAddress').value,
+                    lastUpdated: new Date().toISOString()
+                };
+
+                db.collection('users').doc(currentUser.uid).set(profileData, { merge: true })
+                    .then(() => {
+                        showNotification("Success", "Profile updated successfully");
+                    })
+                    .catch(error => {
+                        console.error("Error updating profile:", error);
+                        showNotification("Error", "Failed to update profile");
+                    })
+                    .finally(() => {
+                        hideLoading();
+                    });
+            });
+
+            // Handle logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    loadPage('home');
+                });
+            });
+        }
+
+        // Show tracking information
+        function showTrackingInfo(orderId) {
+            db.collection('orders').doc(orderId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const order = doc.data();
+                        if (order.trackingNumber && order.courierInfo) {
+                            // In a real app, you would integrate with a courier API here
+                            alert(`Tracking information for order ${orderId}:\n\nCourier: ${order.courierInfo}\nTracking Number: ${order.trackingNumber}\nStatus: ${order.status}`);
+                        } else {
+                            alert('Tracking information not available yet');
+                        }
+                    }
+                });
+        }
+
+        // Show order details
+        function showOrderDetails(orderId) {
+            db.collection('orders').doc(orderId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const order = doc.data();
+                        
+                        document.getElementById('orderDetailsId').textContent = orderId;
+                        document.getElementById('orderDetailsProduct').textContent = `${order.productName} (${order.productSize})`;
+                        document.getElementById('orderDetailsPrice').textContent = order.productPrice;
+                        document.getElementById('orderDetailsShipping').textContent = `₹${order.shippingCharge || 0}`;
+                        document.getElementById('orderDetailsTotal').textContent = `₹${order.totalAmount || order.productPrice.replace('₹', '')}`;
+                        document.getElementById('orderDetailsStatus').textContent = order.status;
+                        document.getElementById('orderDetailsPayment').textContent = order.paymentStatus;
+                        document.getElementById('orderDetailsDate').textContent = new Date(order.orderDate).toLocaleString();
+                        document.getElementById('orderDetailsAddress').textContent = order.customerAddress;
+                        document.getElementById('orderDetailsNotes').textContent = order.notes || 'None';
+                        
+                        if (order.trackingNumber) {
+                            document.getElementById('orderDetailsTracking').innerHTML = `
+                                <strong>Courier:</strong> ${order.courierInfo}<br>
+                                <strong>Tracking #:</strong> ${order.trackingNumber}
+                            `;
+                        } else {
+                            document.getElementById('orderDetailsTracking').textContent = 'Not available';
+                        }
+
+                        // Update progress bar
+                        const progressBar = document.getElementById('trackingProgressBar');
+                        let progress = 0;
+                        switch(order.status) {
+                            case 'Order Placed': progress = 25; break;
+                            case 'Processing': progress = 50; break;
+                            case 'Shipped': progress = 75; break;
+                            case 'Delivered': progress = 100; break;
+                            default: progress = 0;
+                        }
+                        progressBar.style.width = `${progress}%`;
+                        progressBar.setAttribute('aria-valuenow', progress);
+                        
+                        orderDetailsModalInstance.show();
+                    }
+                });
+        }
+
+        // Helper functions
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Processing': return 'bg-info';
+                case 'Shipped': return 'bg-primary';
+                case 'Delivered': return 'bg-success';
+                case 'Cancelled': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getPaymentClass(status) {
+            switch(status) {
+                case 'Paid': return 'bg-success';
+                case 'Failed': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+    </script>
+</body>
+</html>
