@@ -3,179 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frames Vizag - Custom Photo Frames</title>
-    <!-- Bootstrap CSS -->
+    <title>Frames Vizag</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        .product-card {
-            transition: transform 0.3s;
-            margin-bottom: 20px;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .navbar-brand {
-            font-weight: 700;
-        }
-        .order-card {
-            border-left: 4px solid #0d6efd;
-        }
-        .status-badge {
-            font-size: 0.8rem;
-        }
-        #loadingSpinner {
-            display: none;
-        }
+        .product-card, .order-card { transition: transform 0.3s; margin-bottom: 20px; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .order-card { border-left: 4px solid #0d6efd; }
+        .status-badge { font-size: 0.8rem; }
+        .template { display: none; }
+        #loadingSpinner { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
     </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="index.html">Frames Vizag</a>
+            <a class="navbar-brand" href="#" onclick="loadPage('home')">Frames Vizag</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="index.html">Home</a>
+                        <a class="nav-link" href="#" onclick="loadPage('home')">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#products">Products</a>
+                        <a class="nav-link" href="#" onclick="loadPage('products')">Products</a>
                     </li>
                 </ul>
-                <ul class="navbar-nav">
+                <ul class="navbar-nav" id="authNav">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="loginLink">Login</a>
-                    </li>
-                    <li class="nav-item d-none" id="adminLinkContainer">
-                        <a class="nav-link" href="admin.html" id="adminLink">Admin</a>
-                    </li>
-                    <li class="nav-item d-none" id="userLinkContainer">
-                        <a class="nav-link" href="user.html" id="userLink">My Orders</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="logoutLink" style="display:none;">Logout</a>
+                        <a class="nav-link" href="#" onclick="loadPage('login')">Login</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container my-5">
-        <div id="app-content">
-            <!-- Content will be dynamically loaded here -->
-            <div class="text-center" id="loadingSpinner">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+    <!-- Main Content Container -->
+    <div class="container my-5" id="main-content">
+        <!-- Content will be dynamically loaded here -->
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="overlay" id="overlay"></div>
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" id="loadingSpinner" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+
+    <!-- Templates -->
+    <div class="template" id="home-template">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h1>Welcome to Frames Vizag</h1>
+                <p class="lead">Custom photo frames made with care</p>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Our Collection</h5>
+                        <p class="card-text">Browse our wide selection of custom frames in various sizes and materials.</p>
+                        <a href="#" class="btn btn-primary" onclick="loadPage('products')">View Products</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Your Orders</h5>
+                        <p class="card-text">Track your existing orders and see their status.</p>
+                        <a href="#" class="btn btn-outline-primary" onclick="loadPage('user-orders')">My Orders</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Login / Register</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="authForm">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email address</label>
-                            <input type="email" class="form-control" id="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="isAdminCheck">
-                            <label class="form-check-label" for="isAdminCheck">Admin Login</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100" id="loginBtn">Login</button>
-                        <button type="button" class="btn btn-outline-primary w-100 mt-2" id="registerBtn">Register</button>
-                    </form>
-                    <div class="alert alert-danger mt-3 d-none" id="authError"></div>
+    <div class="template" id="products-template">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Our Frame Collection</h2>
+            </div>
+        </div>
+        <div class="row" id="products-container"></div>
+    </div>
+
+    <div class="template" id="login-template">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Login / Register</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="authForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mb-2" id="loginBtn">Login</button>
+                            <button type="button" class="btn btn-outline-primary w-100" id="registerBtn">Register</button>
+                        </form>
+                        <div class="alert alert-danger mt-3 d-none" id="authError"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Order Modal -->
-    <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Place Order</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="orderForm">
-                        <input type="hidden" id="productId">
-                        <div class="mb-3">
-                            <label class="form-label">Product</label>
-                            <input type="text" class="form-control" id="productName" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Size</label>
-                            <input type="text" class="form-control" id="productSize" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Price</label>
-                            <input type="text" class="form-control" id="productPrice" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerName" class="form-label">Your Name</label>
-                            <input type="text" class="form-control" id="customerName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerPhone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="customerPhone" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerAddress" class="form-label">Delivery Address</label>
-                            <textarea class="form-control" id="customerAddress" rows="3" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Place Order</button>
-                    </form>
-                    <div class="alert alert-danger mt-3 d-none" id="orderError"></div>
+    <div class="template" id="admin-template">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Admin Dashboard</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase and other JS -->
+    <div class="template" id="user-orders-template">
+        <h2 class="text-center mb-4">My Orders</h2>
+        <div id="user-orders-container" class="row"></div>
+    </div>
+
+    <div class="template" id="order-modal-template">
+        <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Place Order</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="orderForm">
+                            <input type="hidden" id="productId">
+                            <div class="mb-3">
+                                <label class="form-label">Product</label>
+                                <input type="text" class="form-control" id="productName" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Size</label>
+                                <input type="text" class="form-control" id="productSize" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Price</label>
+                                <input type="text" class="form-control" id="productPrice" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerName" class="form-label">Your Name</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerPhone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="customerPhone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerAddress" class="form-label">Delivery Address</label>
+                                <textarea class="form-control" id="customerAddress" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Place Order</button>
+                        </form>
+                        <div class="alert alert-danger mt-3 d-none" id="orderError"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & Firebase JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module">
-        // Firebase configuration
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            query, 
-            where, 
-            getDocs,
-            updateDoc,
-            doc,
-            enableIndexedDbPersistence
-        } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
+    <script>
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA6ShFd_7VAHtkRUg9k6YEvNSXqKMRvuic",
             authDomain: "framesvizag.firebaseapp.com",
@@ -187,18 +215,15 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
         // Enable offline persistence
-        enableIndexedDbPersistence(db).catch((err) => {
-            if (err.code == 'failed-precondition') {
-                console.log("Offline persistence can only be enabled in one tab at a time.");
-            } else if (err.code == 'unimplemented') {
-                console.log("The current browser does not support offline persistence.");
-            }
-        });
+        db.enablePersistence()
+            .catch((err) => {
+                console.log("Firebase offline persistence error: ", err);
+            });
 
         // Product data
         const products = [
@@ -284,169 +309,133 @@
             }
         ];
 
-        // DOM Elements
-        const appContent = document.getElementById('app-content');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const loginLink = document.getElementById('loginLink');
-        const logoutLink = document.getElementById('logoutLink');
-        const adminLinkContainer = document.getElementById('adminLinkContainer');
-        const userLinkContainer = document.getElementById('userLinkContainer');
-        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
-        const authForm = document.getElementById('authForm');
-        const orderForm = document.getElementById('orderForm');
-        const authError = document.getElementById('authError');
-        const orderError = document.getElementById('orderError');
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const isAdminCheck = document.getElementById('isAdminCheck');
+        // Global variables
+        let currentUser = null;
+        let orderModal = null;
 
-        // Current page
-        const currentPage = window.location.pathname.split('/').pop();
-
-        // Auth state listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in
-                loginLink.style.display = 'none';
-                logoutLink.style.display = 'block';
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up auth state listener
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                updateAuthUI();
                 
-                // Check if admin
-                if (user.email === 'admin@gantasolutions.com') {
-                    adminLinkContainer.classList.remove('d-none');
-                    userLinkContainer.classList.add('d-none');
+                // Load appropriate page based on auth state
+                if (window.location.hash) {
+                    loadPage(window.location.hash.substring(1));
                 } else {
-                    adminLinkContainer.classList.add('d-none');
-                    userLinkContainer.classList.remove('d-none');
+                    loadPage('home');
                 }
-                
-                // Load appropriate content
-                if (currentPage === 'index.html' || currentPage === '') {
-                    loadProductCatalog();
-                } else if (currentPage === 'admin.html') {
-                    loadAdminDashboard();
-                } else if (currentPage === 'user.html') {
-                    loadUserOrders(user.email);
-                }
-            } else {
-                // User is signed out
-                loginLink.style.display = 'block';
-                logoutLink.style.display = 'none';
-                adminLinkContainer.classList.add('d-none');
-                userLinkContainer.classList.add('d-none');
-                
-                if (currentPage === 'index.html' || currentPage === '') {
-                    loadProductCatalog();
-                } else {
-                    // Redirect to home if not logged in
-                    window.location.href = 'index.html';
-                }
-            }
-        });
-
-        // Event Listeners
-        loginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginModal.show();
-        });
-
-        logoutLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            signOut(auth).then(() => {
-                window.location.href = 'index.html';
             });
+
+            // Initialize order modal
+            const orderModalEl = document.getElementById('order-modal-template').innerHTML;
+            document.body.insertAdjacentHTML('beforeend', orderModalEl);
+            orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
         });
 
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        // Update authentication UI
+        function updateAuthUI() {
+            const authNav = document.getElementById('authNav');
+            authNav.innerHTML = '';
             
-            if (loginBtn.textContent === 'Login') {
-                handleLogin(email, password);
+            if (currentUser) {
+                // User is logged in
+                if (currentUser.email === 'admin@gantasolutions.com') {
+                    authNav.innerHTML = `
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="loadPage('admin')">Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="auth.signOut()">Logout</a>
+                        </li>
+                    `;
+                } else {
+                    authNav.innerHTML = `
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="loadPage('user-orders')">My Orders</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="auth.signOut()">Logout</a>
+                        </li>
+                    `;
+                }
             } else {
-                handleRegister(email, password);
+                // User is logged out
+                authNav.innerHTML = `
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="loadPage('login')">Login</a>
+                    </li>
+                `;
             }
-        });
-
-        loginBtn.addEventListener('click', () => {
-            registerBtn.textContent = 'Register';
-            loginBtn.textContent = 'Login';
-        });
-
-        registerBtn.addEventListener('click', () => {
-            registerBtn.textContent = 'Back to Login';
-            loginBtn.textContent = 'Register';
-        });
-
-        orderForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            placeOrder();
-        });
-
-        // Functions
-        function showLoading() {
-            loadingSpinner.style.display = 'block';
-            appContent.innerHTML = '';
         }
 
-        function hideLoading() {
-            loadingSpinner.style.display = 'none';
-        }
-
-        function handleLogin(email, password) {
+        // Load a page template
+        function loadPage(page) {
             showLoading();
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    loginModal.hide();
-                    authForm.reset();
-                    authError.classList.add('d-none');
-                })
-                .catch((error) => {
-                    authError.textContent = error.message;
-                    authError.classList.remove('d-none');
-                })
-                .finally(() => {
-                    hideLoading();
-                });
-        }
-
-        function handleRegister(email, password) {
-            showLoading();
-            createUserWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    authError.textContent = 'Registration successful! Please login.';
-                    authError.classList.remove('d-none');
-                    authError.classList.remove('alert-danger');
-                    authError.classList.add('alert-success');
-                    registerBtn.textContent = 'Back to Login';
-                    loginBtn.textContent = 'Login';
-                })
-                .catch((error) => {
-                    authError.textContent = error.message;
-                    authError.classList.remove('d-none');
-                    authError.classList.remove('alert-success');
-                    authError.classList.add('alert-danger');
-                })
-                .finally(() => {
-                    hideLoading();
-                });
-        }
-
-        function loadProductCatalog() {
-            showLoading();
+            window.location.hash = page;
+            const mainContent = document.getElementById('main-content');
+            const template = document.getElementById(`${page}-template`);
             
-            let html = `
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h2 class="text-center mb-4">Our Frame Collection</h2>
-                    </div>
-                </div>
-                <div class="row" id="products-container">
-            `;
+            if (template) {
+                mainContent.innerHTML = template.innerHTML;
+                
+                // Initialize the loaded page
+                switch(page) {
+                    case 'home':
+                        initHomePage();
+                        break;
+                    case 'products':
+                        initProductsPage();
+                        break;
+                    case 'login':
+                        initLoginPage();
+                        break;
+                    case 'admin':
+                        if (currentUser?.email === 'admin@gantasolutions.com') {
+                            initAdminPage();
+                        } else {
+                            loadPage('login');
+                        }
+                        break;
+                    case 'user-orders':
+                        if (currentUser) {
+                            initUserOrdersPage();
+                        } else {
+                            loadPage('login');
+                        }
+                        break;
+                }
+            } else {
+                mainContent.innerHTML = '<div class="alert alert-danger">Page not found</div>';
+            }
+            hideLoading();
+        }
+
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Initialize Home Page
+        function initHomePage() {
+            // No special initialization needed for home page
+        }
+
+        // Initialize Products Page
+        function initProductsPage() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
             
             products.forEach(product => {
-                html += `
+                const card = `
                     <div class="col-md-4 col-sm-6 mb-4">
                         <div class="card product-card h-100">
                             <div class="card-body">
@@ -466,11 +455,8 @@
                         </div>
                     </div>
                 `;
+                container.insertAdjacentHTML('beforeend', card);
             });
-            
-            html += `</div>`;
-            appContent.innerHTML = html;
-            hideLoading();
             
             // Add event listeners to order buttons
             document.querySelectorAll('.order-btn').forEach(button => {
@@ -486,11 +472,19 @@
                     orderModal.show();
                 });
             });
+            
+            // Initialize order form
+            document.getElementById('orderForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                placeOrder();
+            });
         }
 
+        // Place an order
         function placeOrder() {
             showLoading();
-            orderError.classList.add('d-none');
+            const errorElement = document.getElementById('orderError');
+            errorElement.classList.add('d-none');
             
             const order = {
                 productId: document.getElementById('productId').value,
@@ -500,7 +494,7 @@
                 customerName: document.getElementById('customerName').value,
                 customerPhone: document.getElementById('customerPhone').value,
                 customerAddress: document.getElementById('customerAddress').value,
-                customerEmail: auth.currentUser?.email || 'guest',
+                customerEmail: currentUser?.email || 'guest',
                 orderDate: new Date().toISOString(),
                 status: 'Order Placed',
                 paymentStatus: 'Pending',
@@ -508,62 +502,92 @@
                 trackingNumber: ''
             };
             
-            addDoc(collection(db, 'orders'), order)
+            db.collection('orders').add(order)
                 .then(() => {
                     orderModal.hide();
-                    orderForm.reset();
+                    document.getElementById('orderForm').reset();
                     alert('Order placed successfully!');
                 })
                 .catch((error) => {
-                    orderError.textContent = error.message;
-                    orderError.classList.remove('d-none');
+                    errorElement.textContent = error.message;
+                    errorElement.classList.remove('d-none');
                 })
                 .finally(() => {
                     hideLoading();
                 });
         }
 
-        function loadAdminDashboard() {
-            showLoading();
+        // Initialize Login Page
+        function initLoginPage() {
+            const authForm = document.getElementById('authForm');
+            const authError = document.getElementById('authError');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
             
-            let html = `
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h2 class="text-center mb-4">Admin Dashboard</h2>
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>Recent Orders</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Order ID</th>
-                                                <th>Product</th>
-                                                <th>Customer</th>
-                                                <th>Phone</th>
-                                                <th>Status</th>
-                                                <th>Payment</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="orders-table-body">
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Toggle between login and register
+            registerBtn.addEventListener('click', () => {
+                if (loginBtn.textContent === 'Login') {
+                    loginBtn.textContent = 'Register';
+                    registerBtn.textContent = 'Back to Login';
+                } else {
+                    loginBtn.textContent = 'Login';
+                    registerBtn.textContent = 'Register';
+                }
+            });
             
-            appContent.innerHTML = html;
+            // Handle form submission
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const isLogin = loginBtn.textContent === 'Login';
+                
+                showLoading();
+                authError.classList.add('d-none');
+                
+                if (isLogin) {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .then(() => {
+                            loadPage('home');
+                        })
+                        .catch((error) => {
+                            authError.textContent = error.message;
+                            authError.classList.remove('d-none');
+                        })
+                        .finally(() => {
+                            hideLoading();
+                        });
+                } else {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then(() => {
+                            authError.textContent = 'Registration successful! Please login.';
+                            authError.classList.remove('d-none');
+                            authError.classList.remove('alert-danger');
+                            authError.classList.add('alert-success');
+                            loginBtn.textContent = 'Login';
+                            registerBtn.textContent = 'Register';
+                        })
+                        .catch((error) => {
+                            authError.textContent = error.message;
+                            authError.classList.remove('d-none');
+                            authError.classList.remove('alert-success');
+                            authError.classList.add('alert-danger');
+                        })
+                        .finally(() => {
+                            hideLoading();
+                        });
+                }
+            });
+        }
+
+        // Initialize Admin Page
+        function initAdminPage() {
+            const ordersTableBody = document.getElementById('orders-table-body');
             
-            // Load orders from Firestore
-            getDocs(query(collection(db, 'orders')))
+            // Load orders
+            db.collection('orders').get()
                 .then((querySnapshot) => {
-                    const ordersTableBody = document.getElementById('orders-table-body');
+                    ordersTableBody.innerHTML = '';
                     
                     if (querySnapshot.empty) {
                         ordersTableBody.innerHTML = `
@@ -620,49 +644,46 @@
                             const statusSelect = document.querySelector(`.status-select[data-order-id="${orderId}"]`);
                             const paymentSelect = document.querySelector(`.payment-select[data-order-id="${orderId}"]`);
                             
-                            updateDoc(doc(db, 'orders', orderId), {
+                            showLoading();
+                            db.collection('orders').doc(orderId).update({
                                 status: statusSelect.value,
                                 paymentStatus: paymentSelect.value
-                            }).then(() => {
+                            })
+                            .then(() => {
                                 alert('Order updated successfully!');
-                            }).catch((error) => {
+                            })
+                            .catch((error) => {
                                 alert('Error updating order: ' + error.message);
+                            })
+                            .finally(() => {
+                                hideLoading();
                             });
                         });
                     });
                 })
                 .catch((error) => {
-                    appContent.innerHTML = `
-                        <div class="alert alert-danger">Error loading orders: ${error.message}</div>
+                    ordersTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center text-danger">Error loading orders: ${error.message}</td>
+                        </tr>
                     `;
-                })
-                .finally(() => {
-                    hideLoading();
                 });
         }
 
-        function loadUserOrders(userEmail) {
-            showLoading();
+        // Initialize User Orders Page
+        function initUserOrdersPage() {
+            const ordersContainer = document.getElementById('user-orders-container');
             
-            let html = `
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h2 class="text-center mb-4">My Orders</h2>
-                        <div id="user-orders-container"></div>
-                    </div>
-                </div>
-            `;
-            
-            appContent.innerHTML = html;
-            
-            // Load user's orders from Firestore
-            getDocs(query(collection(db, 'orders'), where('customerEmail', '==', userEmail)))
+            // Load user's orders
+            db.collection('orders').where('customerEmail', '==', currentUser.email).get()
                 .then((querySnapshot) => {
-                    const ordersContainer = document.getElementById('user-orders-container');
+                    ordersContainer.innerHTML = '';
                     
                     if (querySnapshot.empty) {
                         ordersContainer.innerHTML = `
-                            <div class="alert alert-info">You haven't placed any orders yet.</div>
+                            <div class="col-12">
+                                <div class="alert alert-info">You haven't placed any orders yet.</div>
+                            </div>
                         `;
                         return;
                     }
@@ -684,32 +705,36 @@
                         const orderDate = new Date(order.orderDate).toLocaleString();
                         
                         const orderCard = document.createElement('div');
-                        orderCard.className = 'card mb-3 order-card';
+                        orderCard.className = 'col-md-6';
                         orderCard.innerHTML = `
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <h5 class="card-title">${order.productName}</h5>
-                                    <small class="text-muted">${orderDate}</small>
+                            <div class="card mb-3 order-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="card-title">${order.productName}</h5>
+                                        <small class="text-muted">${orderDate}</small>
+                                    </div>
+                                    <h6 class="card-subtitle mb-2 text-muted">${order.productSize}</h6>
+                                    <p class="card-text">Order ID: ${orderId.substring(0, 8)}...</p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Status:</strong> <span class="badge ${statusBadgeClass} status-badge">${order.status}</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Payment:</strong> <span class="badge ${paymentBadgeClass} status-badge">${order.paymentStatus}</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <p><strong>Price:</strong> ${order.productPrice}</p>
+                                        </div>
+                                    </div>
+                                    ${order.courierInfo ? `
+                                        <div class="mt-2">
+                                            <p><strong>Courier:</strong> ${order.courierInfo}</p>
+                                            <p><strong>Tracking #:</strong> ${order.trackingNumber}</p>
+                                        </div>
+                                    ` : ''}
                                 </div>
-                                <h6 class="card-subtitle mb-2 text-muted">${order.productSize}</h6>
-                                <p class="card-text">Order ID: ${orderId.substring(0, 8)}...</p>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <p><strong>Status:</strong> <span class="badge ${statusBadgeClass} status-badge">${order.status}</span></p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <p><strong>Payment:</strong> <span class="badge ${paymentBadgeClass} status-badge">${order.paymentStatus}</span></p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <p><strong>Price:</strong> ${order.productPrice}</p>
-                                    </div>
-                                </div>
-                                ${order.courierInfo ? `
-                                    <div class="mt-2">
-                                        <p><strong>Courier:</strong> ${order.courierInfo}</p>
-                                        <p><strong>Tracking #:</strong> ${order.trackingNumber}</p>
-                                    </div>
-                                ` : ''}
                             </div>
                         `;
                         
@@ -717,22 +742,12 @@
                     });
                 })
                 .catch((error) => {
-                    appContent.innerHTML = `
-                        <div class="alert alert-danger">Error loading orders: ${error.message}</div>
+                    ordersContainer.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-danger">Error loading orders: ${error.message}</div>
+                        </div>
                     `;
-                })
-                .finally(() => {
-                    hideLoading();
                 });
-        }
-
-        // Initialize the appropriate page based on current URL
-        if (currentPage === 'index.html' || currentPage === '') {
-            loadProductCatalog();
-        } else if (currentPage === 'admin.html') {
-            // Will be handled by auth state listener
-        } else if (currentPage === 'user.html') {
-            // Will be handled by auth state listener
         }
     </script>
 </body>
